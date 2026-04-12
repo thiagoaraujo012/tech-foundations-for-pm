@@ -17,8 +17,10 @@ export async function POST(req: NextRequest) {
   try {
     const decoded = await adminAuth().verifyIdToken(idToken);
     uid = decoded.uid;
-  } catch {
-    return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error('verifyIdToken failed:', msg);
+    return NextResponse.json({ error: 'Invalid token', detail: msg }, { status: 401 });
   }
 
   const selectedPlan = PLANS[plan as PlanKey];
