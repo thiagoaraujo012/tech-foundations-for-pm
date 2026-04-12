@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthProvider, useAuth } from '@/components/AuthProvider';
 import AuthModal from '@/components/AuthModal';
-import { PLANS, PlanKey } from '@/lib/stripe';
+import { PLANS, PlanKey } from '@/lib/plans';
 
 function PaywallContent() {
   const router = useRouter();
