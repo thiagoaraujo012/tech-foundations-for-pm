@@ -66,6 +66,19 @@ export default function ModulePage({ moduleId }: Props) {
     setSavedOnce(false);
   }, [moduleId]);
 
+  // Guard: redirect to the last unlocked module if URL is accessed directly
+  useEffect(() => {
+    if (activeTab === 0) return;
+    if (quizState[activeTab - 1] === 'pass') return;
+    // Find the furthest reachable module
+    let target = 0;
+    for (let i = 1; i < MODULES.length; i++) {
+      if (quizState[i - 1] === 'pass') target = i;
+      else break;
+    }
+    router.replace(`/module/${target + 1}`);
+  }, [activeTab, quizState]);
+
   // Randomize 3 Q&As from the pool each time a module is visited
   useEffect(() => {
     if (!qaIndices[activeTab]) {
