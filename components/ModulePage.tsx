@@ -1,15 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './AuthProvider';
-import { MODULES, FREE_MODULES } from '@/data/modules';
+import { MODULES } from '@/data/modules';
+import { DIAGRAMS } from './diagrams';
 import AuthModal from './AuthModal';
 
-type Lang = 'en' | 'pt';
-type Answers = Record<string, 'yes' | 'no'>;
 type QuizState = Record<number, 'pass' | 'fail'>;
 type QuizSelections = Record<number, number[]>;
 
@@ -29,88 +28,97 @@ function saveLocal(data: object) {
 
 interface Props {
   moduleId: number;
-  hasAccess: boolean;
-  lang?: Lang;
 }
 
-export default function ModulePage({ moduleId, hasAccess, lang: initialLang = 'en' }: Props) {
+export default function ModulePage({ moduleId }: Props) {
   const router = useRouter();
   const { user } = useAuth();
-  const [lang, setLangState] = useState<Lang>(initialLang);
   const activeTab = moduleId;
   const [view, setView] = useState<'study' | 'quiz'>('study');
-  const [answers, setAnswers] = useState<Answers>({});
-  const [quizState, setQuizState] = useState<QuizState>({});
-  const [quizSels, setQuizSels] = useState<QuizSelections>({});
+  const [quizState, setQuizState] = useState<QuizState>(() => {
+    if (typeof window === 'undefined') return {};
+    return loadLocal()?.quizState ?? {};
+  });
+  const [quizSels, setQuizSels] = useState<QuizSelections>(() => {
+    if (typeof window === 'undefined') return {};
+    return loadLocal()?.quizSels ?? {};
+  });
   const [authOpen, setAuthOpen] = useState(false);
+  // Randomly pick 3 Q&A indices from the pool of 6, per module, per session
+  const [qaIndices, setQaIndices] = useState<Record<number, number[]>>({});
+  // Inline question state (not synced to Firestore — soft interactions)
+  const [inlineSels, setInlineSels] = useState<Record<string, number>>(() => {
+    if (typeof window === 'undefined') return {};
+    return loadLocal()?.inlineSels ?? {};
+  });
+  const [reflectTexts, setReflectTexts] = useState<Record<string, string>>(() => {
+    if (typeof window === 'undefined') return {};
+    return loadLocal()?.reflectTexts ?? {};
+  });
+  const [savedOnce, setSavedOnce] = useState(false);
+  const navRef = useRef<HTMLDivElement>(null);
 
   const modules = MODULES;
 
-  // Load persisted state on mount
+  // Reset view to study when navigating to a different module
   useEffect(() => {
-    const local = loadLocal();
-    if (local) {
-      if (local.answers) setAnswers(local.answers);
-      if (local.quizState) setQuizState(local.quizState);
-      if (local.quizSels) setQuizSels(local.quizSels);
-      if (local.lang) setLangState(local.lang);
-    }
-  }, []);
+    setView('study');
+    setSavedOnce(false);
+  }, [moduleId]);
 
-  // Sync from Firestore when user logs in
+  // Randomize 3 Q&As from the pool each time a module is visited
+  useEffect(() => {
+    if (!qaIndices[activeTab]) {
+      const indices = Array.from({ length: 6 }, (_, i) => i);
+      for (let i = indices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [indices[i], indices[j]] = [indices[j], indices[i]];
+      }
+      setQaIndices(prev => ({ ...prev, [activeTab]: indices.slice(0, 3) }));
+    }
+  }, [activeTab]);
+
   useEffect(() => {
     if (!user) return;
     getDoc(doc(db, 'users', user.uid)).then((snap) => {
       if (!snap.exists()) return;
       const data = snap.data();
       if (data.quiz_state) setQuizState(data.quiz_state);
-      if (data.answers) setAnswers(data.answers);
       if (data.quiz_sels) setQuizSels(data.quiz_sels);
     });
   }, [user]);
 
-  // Persist state
   useEffect(() => {
-    const data = { answers, quizState, quizSels, lang };
+    if (!savedOnce) { setSavedOnce(true); return; }
+    const data = { quizState, quizSels, inlineSels, reflectTexts };
     saveLocal(data);
     if (user) {
       setDoc(doc(db, 'users', user.uid), {
         quiz_state: quizState,
-        answers,
         quiz_sels: quizSels,
         updatedAt: new Date(),
       }, { merge: true }).catch(() => {});
     }
-  }, [answers, quizState, quizSels, lang, user]);
+  }, [quizState, quizSels, inlineSels, reflectTexts, user]);
 
   function isUnlocked(idx: number) {
     if (idx === 0) return true;
     return quizState[idx - 1] === 'pass';
   }
 
-  function canAccess(idx: number) {
-    if (idx < FREE_MODULES) return true;
-    return hasAccess;
-  }
-
   function switchTab(i: number) {
     if (!isUnlocked(i)) return;
-    if (!canAccess(i)) { router.push('/paywall'); return; }
     router.push(`/module/${i + 1}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   const mod = modules[activeTab];
-  const context = lang === 'pt' ? mod.contextPt : mod.context;
-  const qas = lang === 'pt' ? mod.qasPt : mod.qas;
-  const quiz = lang === 'pt' ? mod.quizPt : mod.quiz;
+  const sections = mod.sections;
+  const qas = mod.qas;
+  const quiz = mod.quiz;
 
   const passedCount = Object.values(quizState).filter(v => v === 'pass').length;
   const progressPct = Math.round((passedCount / modules.length) * 100);
-
-  function markQA(id: string, val: 'yes' | 'no') {
-    setAnswers(prev => ({ ...prev, [id]: val }));
-  }
 
   function selectQuizOpt(qIdx: number, optIdx: number) {
     if (quizState[activeTab] === 'pass') return;
@@ -125,7 +133,14 @@ export default function ModulePage({ moduleId, hasAccess, lang: initialLang = 'e
     const sels = quizSels[activeTab] ?? [-1, -1, -1];
     const score = quiz.reduce((s, q, i) => s + (sels[i] === q.correct ? 1 : 0), 0);
     const result = score >= 2 ? 'pass' : 'fail';
-    setQuizState(prev => ({ ...prev, [activeTab]: result }));
+    setQuizState(prev => {
+      const next = { ...prev, [activeTab]: result };
+      if (result === 'pass' && isLast) {
+        saveLocal({ ...loadLocal(), quizState: next });
+        router.push('/complete');
+      }
+      return next;
+    });
   }
 
   function retryQuiz() {
@@ -145,10 +160,6 @@ export default function ModulePage({ moduleId, hasAccess, lang: initialLang = 'e
       <div className="wrap">
         {/* Top bar */}
         <div className="lang-bar">
-          <div className="lang-toggle">
-            <button className={`lang-btn ${lang === 'en' ? 'active' : ''}`} onClick={() => setLangState('en')}>EN</button>
-            <button className={`lang-btn ${lang === 'pt' ? 'active' : ''}`} onClick={() => setLangState('pt')}>PT-BR</button>
-          </div>
           {user ? (
             <span style={{ fontSize: '.78rem', color: 'var(--green)', fontFamily: 'var(--mono)' }}>
               ● {user.displayName ?? user.email}
@@ -160,12 +171,10 @@ export default function ModulePage({ moduleId, hasAccess, lang: initialLang = 'e
 
         {/* Hero */}
         <div className="hero" style={{ marginBottom: '1.5rem' }}>
-          <div className="hero-label">{lang === 'pt' ? 'Guia de Estudos' : 'Study Guide'}</div>
-          <h1>{lang === 'pt' ? 'Fundamentos Técnicos para PMs' : 'Tech Foundations for Product Managers'}</h1>
+          <div className="hero-label">Study Guide</div>
+          <h1>Tech Foundations for Product Managers</h1>
           <p style={{ color: 'var(--text2)', fontSize: '.88rem' }}>
-            {lang === 'pt'
-              ? '10 módulos · 30+ perguntas · Nível: PM sem background de engenharia'
-              : '10 modules · 30+ questions · Level: PM without engineering background'}
+            10 modules · 30+ questions · Level: PM without engineering background
           </p>
         </div>
 
@@ -176,38 +185,127 @@ export default function ModulePage({ moduleId, hasAccess, lang: initialLang = 'e
         </div>
 
         {/* Nav */}
-        <div className="nav">
-          <a href="/" className="nav-btn" title="Home">⌂</a>
-          {modules.map((m, i) => {
-            const unlocked = isUnlocked(i);
-            const accessible = canAccess(i);
-            const active = i === activeTab;
-            let cls = 'nav-btn';
-            if (active) cls += ' active';
-            if (!unlocked) cls += ' locked';
-            else if (!accessible) cls += ' paywall';
-            return (
-              <button key={i} className={cls} onClick={() => switchTab(i)}>
-                {lang === 'pt' ? m.titlePt : m.title}
-              </button>
-            );
-          })}
+        <div className="nav-wrap">
+          <button
+            className="nav-arrow nav-arrow-left"
+            onClick={() => navRef.current?.scrollBy({ left: -220, behavior: 'smooth' })}
+            aria-label="Scroll left"
+          >‹</button>
+          <div className="nav" ref={navRef}>
+            <a href="/" className="nav-btn" title="Home">⌂</a>
+            {modules.map((m, i) => {
+              const unlocked = isUnlocked(i);
+              const active = i === activeTab;
+              let cls = 'nav-btn';
+              if (active) cls += ' active';
+              if (!unlocked) cls += ' locked';
+              return (
+                <button key={i} className={cls} onClick={() => switchTab(i)}>
+                  {m.title}
+                </button>
+              );
+            })}
+          </div>
+          <button
+            className="nav-arrow nav-arrow-right"
+            onClick={() => navRef.current?.scrollBy({ left: 220, behavior: 'smooth' })}
+            aria-label="Scroll right"
+          >›</button>
         </div>
 
         {view === 'study' ? (
           <>
-            {/* Context */}
-            <div className="context-box">
-              <div className="ctx-label">{lang === 'pt' ? 'Contexto' : 'Context'}</div>
-              <div dangerouslySetInnerHTML={{ __html: context }} />
-            </div>
+            {/* Sections with diagrams and inline questions */}
+            {sections.map((section, sIdx) => {
+              const inlineKey = `${activeTab}-s${sIdx}`;
+              const iq = section.inlineQuestion;
+              const DiagramComp = section.diagramKey ? DIAGRAMS[section.diagramKey] : null;
+
+              return (
+                <div key={sIdx}>
+                  {/* Content */}
+                  <div className="context-box">
+                    <div className="ctx-label">
+                      Content {sIdx + 1}/{sections.length}
+                    </div>
+                    <div dangerouslySetInnerHTML={{ __html: section.html }} />
+                  </div>
+
+                  {/* Video */}
+                  {section.videoUrl && (
+                    <>
+                      <div className="video-wrap">
+                        <iframe
+                          src={`https://www.youtube.com/embed/${new URL(section.videoUrl).searchParams.get('v')}`}
+                          title="Module video"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                      {section.videoCaption && (
+                        <p className="diagram-caption">{section.videoCaption}</p>
+                      )}
+                    </>
+                  )}
+
+                  {/* Static image */}
+                  {section.imageUrl && (
+                    <div className="diagram-wrap">
+                      <img
+                        src={section.imageUrl}
+                        alt={section.imageCaption ?? ''}
+                        style={{ width: '100%', borderRadius: '8px' }}
+                      />
+                      {section.imageCaption && (
+                        <p className="diagram-caption">{section.imageCaption}</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Diagram */}
+                  {DiagramComp && (
+                    <div className="diagram-wrap">
+                      <DiagramComp />
+                      {section.diagramCaption && (
+                        <p className="diagram-caption">{section.diagramCaption}</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Inline question */}
+                  {iq && (
+                    <div className="inline-q">
+                      {iq.type === 'mcq' ? (
+                        <InlineMCQ
+                          question={iq.q}
+                          opts={iq.opts}
+                          correct={iq.correct}
+                          selected={inlineSels[inlineKey] ?? -1}
+                          onSelect={(optIdx) =>
+                            setInlineSels(prev => ({ ...prev, [inlineKey]: optIdx }))
+                          }
+                        />
+                      ) : (
+                        <InlineReflect
+                          prompt={iq.prompt}
+                          value={reflectTexts[inlineKey] ?? ''}
+                          onChange={(v) =>
+                            setReflectTexts(prev => ({ ...prev, [inlineKey]: v }))
+                          }
+                        />
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
 
             {/* Q&A */}
-            {qas.map((qa, i) => {
-              const id = `${activeTab}-${i}`;
-              const mark = answers[id];
+            {(qaIndices[activeTab] ?? [0, 1, 2]).map((qaIdx, i) => {
+              const qa = qas[qaIdx];
+              const id = `${activeTab}-${qaIdx}`;
               return (
-                <div key={id} id={`qa-${id}`} className={`qa${mark === 'yes' ? ' done-yes' : mark === 'no' ? ' done-no' : ''}`}>
+                <div key={id} id={`qa-${id}`} className="qa">
                   <div className="qa-header" onClick={() => {
                     document.getElementById(`qa-${id}`)?.classList.toggle('open');
                   }}>
@@ -218,30 +316,32 @@ export default function ModulePage({ moduleId, hasAccess, lang: initialLang = 'e
                   <div className="qa-body">
                     <div className="qa-divider" />
                     <div className="qa-answer">{qa.a}</div>
-                    <div className="qa-check">
-                      <button className={`btn-yes${mark === 'yes' ? ' sel' : ''}`} onClick={() => markQA(id, 'yes')}>
-                        {lang === 'pt' ? '✓ Entendi' : '✓ Got it'}
-                      </button>
-                      <button className={`btn-no${mark === 'no' ? ' sel' : ''}`} onClick={() => markQA(id, 'no')}>
-                        {lang === 'pt' ? '✗ Revisar' : '✗ Review'}
-                      </button>
-                    </div>
                   </div>
                 </div>
               );
             })}
 
+            {/* Takeaways */}
+            <div className="takeaways">
+              <div className="takeaways-label">Takeaways for PMs</div>
+              <ul className="takeaways-list">
+                {mod.takeaways.map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
+              </ul>
+            </div>
+
             <button className="goto-quiz" onClick={() => { setView('quiz'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
-              {lang === 'pt' ? 'Ir para a Avaliação do Módulo →' : 'Go to Module Assessment →'}
+              Go to Module Assessment →
             </button>
           </>
         ) : (
           /* Quiz */
           <div className="quiz-section">
-            <div className="quiz-label">{lang === 'pt' ? 'Avaliação' : 'Assessment'}</div>
-            <div className="quiz-title">{lang === 'pt' ? `Avaliação do Módulo ${activeTab + 1}` : `Module ${activeTab + 1} Assessment`}</div>
+            <div className="quiz-label">Assessment</div>
+            <div className="quiz-title">Module {activeTab + 1} Assessment</div>
             <div className="quiz-sub">
-              {lang === 'pt' ? 'Acerte pelo menos 2 de 3 para desbloquear o próximo módulo.' : 'Answer at least 2 out of 3 correctly to unlock the next module.'}
+              Answer at least 2 out of 3 correctly to unlock the next module.
             </div>
 
             {quiz.map((q, qi) => {
@@ -266,7 +366,7 @@ export default function ModulePage({ moduleId, hasAccess, lang: initialLang = 'e
 
             {!quizDone && (
               <button className="quiz-submit" disabled={!allSelected} onClick={submitQuiz}>
-                {lang === 'pt' ? 'Enviar Respostas' : 'Submit Answers'}
+                Submit Answers
               </button>
             )}
 
@@ -275,21 +375,21 @@ export default function ModulePage({ moduleId, hasAccess, lang: initialLang = 'e
                 <span className="score">{score}/3</span>
                 {quizPassed
                   ? (isLast
-                      ? (lang === 'pt' ? 'Parabéns! Você completou todos os módulos! 🎉' : 'Congratulations! You completed all modules! 🎉')
-                      : (lang === 'pt' ? `Aprovado! Módulo ${activeTab + 2} desbloqueado.` : `You passed! Module ${activeTab + 2} is now unlocked.`))
-                  : (lang === 'pt' ? 'Você precisa acertar pelo menos 2/3. Revise o material e tente novamente.' : 'You need at least 2/3 to proceed. Review the material and try again.')}
+                      ? 'Congratulations! You completed all modules!'
+                      : `You passed! Module ${activeTab + 2} is now unlocked.`)
+                  : 'You need at least 2/3 to proceed. Review the material and try again.'}
                 <div>
                   {quizPassed && !isLast && (
                     <button className="quiz-next" onClick={() => switchTab(activeTab + 1)}>
-                      {lang === 'pt' ? `Ir para o Módulo ${activeTab + 2} →` : `Go to Module ${activeTab + 2} →`}
+                      Go to Module {activeTab + 2} →
                     </button>
                   )}
                   {!quizPassed && (
                     <>
-                      <button className="quiz-retry" onClick={retryQuiz}>{lang === 'pt' ? 'Tentar Novamente' : 'Try Again'}</button>
+                      <button className="quiz-retry" onClick={retryQuiz}>Try Again</button>
                       {' '}
                       <button className="quiz-retry" style={{ borderColor: 'var(--border)', color: 'var(--text2)' }} onClick={() => setView('study')}>
-                        {lang === 'pt' ? '← Revisar Material' : '← Review Material'}
+                        ← Review Material
                       </button>
                     </>
                   )}
@@ -298,17 +398,88 @@ export default function ModulePage({ moduleId, hasAccess, lang: initialLang = 'e
             )}
 
             <button style={{ marginTop: '1rem', background: 'none', border: 'none', color: 'var(--text3)', cursor: 'pointer', fontSize: '.82rem' }} onClick={() => setView('study')}>
-              ← {lang === 'pt' ? 'Voltar ao Material' : 'Back to Study Material'}
+              ← Back to Study Material
             </button>
           </div>
         )}
 
         <div className="footer">
-          Tech Foundations for PMs · {lang === 'pt' ? 'Criado por' : 'Created by'} Thiago Araujo
+          Tech Foundations for PMs · Created by Thiago Araujo
         </div>
       </div>
 
       {authOpen && <AuthModal onClose={() => setAuthOpen(false)} />}
     </>
+  );
+}
+
+// ── Inline MCQ component ──────────────────────────────────
+
+function InlineMCQ({ question, opts, correct, selected, onSelect }: {
+  question: string;
+  opts: string[];
+  correct: number;
+  selected: number;
+  onSelect: (i: number) => void;
+}) {
+  const answered = selected >= 0;
+  const isCorrect = selected === correct;
+
+  return (
+    <div className="inline-mcq">
+      <div className="inline-q-label">
+        🧠 Check your understanding
+      </div>
+      <p className="inline-q-text">{question}</p>
+      <div className="inline-mcq-opts">
+        {opts.map((opt, i) => {
+          let cls = 'inline-opt';
+          if (answered) {
+            if (i === correct) cls += ' inline-opt-correct';
+            else if (i === selected) cls += ' inline-opt-wrong';
+            else cls += ' inline-opt-disabled';
+          } else if (i === selected) {
+            cls += ' inline-opt-selected';
+          }
+          return (
+            <button key={i} className={cls} onClick={() => !answered && onSelect(i)}>
+              {opt}
+            </button>
+          );
+        })}
+      </div>
+      {answered && (
+        <div className={`inline-mcq-feedback ${isCorrect ? 'correct' : 'wrong'}`}>
+          {isCorrect
+            ? '✓ Correct!'
+            : `✗ Correct answer: "${opts[correct]}"`}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Inline Reflect component ──────────────────────────────
+
+function InlineReflect({ prompt, value, onChange }: {
+  prompt: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="inline-reflect">
+      <div className="inline-q-label">
+        💭 Reflect
+        <span className="inline-optional"> (optional)</span>
+      </div>
+      <p className="inline-q-text">{prompt}</p>
+      <textarea
+        className="inline-reflect-input"
+        placeholder="Write your reflection here..."
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        rows={3}
+      />
+    </div>
   );
 }

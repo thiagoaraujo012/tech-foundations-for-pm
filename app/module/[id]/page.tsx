@@ -1,25 +1,10 @@
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { AuthProvider } from '@/components/AuthProvider';
 import ModulePage from '@/components/ModulePage';
-import { MODULES, FREE_MODULES } from '@/data/modules';
-import { getUserAccess, canAccessModule } from '@/lib/access';
-import { adminAuth } from '@/lib/firebase-admin';
+import { MODULES } from '@/data/modules';
 
 interface Props {
   params: { id: string };
-}
-
-async function getSessionUser() {
-  try {
-    const cookieStore = cookies();
-    const token = cookieStore.get('firebase-token')?.value;
-    if (!token) return null;
-    const decoded = await adminAuth().verifyIdToken(token);
-    return decoded;
-  } catch {
-    return null;
-  }
 }
 
 export default async function ModuleRoute({ params }: Props) {
@@ -29,29 +14,9 @@ export default async function ModuleRoute({ params }: Props) {
     redirect('/module/1');
   }
 
-  // Free modules: no auth check needed
-  if (id < FREE_MODULES) {
-    return (
-      <AuthProvider>
-        <ModulePage moduleId={id} hasAccess={true} />
-      </AuthProvider>
-    );
-  }
-
-  // Paid modules: check access
-  const sessionUser = await getSessionUser();
-  if (!sessionUser) {
-    redirect('/paywall');
-  }
-
-  const access = await getUserAccess(sessionUser.uid);
-  if (!canAccessModule(id, access)) {
-    redirect('/paywall');
-  }
-
   return (
     <AuthProvider>
-      <ModulePage moduleId={id} hasAccess={true} />
+      <ModulePage moduleId={id} />
     </AuthProvider>
   );
 }

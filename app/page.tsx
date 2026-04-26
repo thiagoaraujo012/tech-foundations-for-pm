@@ -24,12 +24,6 @@ export default function Home() {
             <div className="home-stat-label">Quizzes</div>
           </div>
         </div>
-        <div className="home-video-wrap">
-          <div className="home-video-placeholder">
-            <span className="vp-icon">▶</span>
-            <span>Video coming soon</span>
-          </div>
-        </div>
         <Link href="/module/1" className="btn-start">Start your journey →</Link>
       </div>
     </div>
