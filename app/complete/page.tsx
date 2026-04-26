@@ -3,6 +3,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthProvider } from '@/components/AuthProvider';
+import { MODULES } from '@/data/modules';
+
+const STORAGE_KEY = 'tfpm_v3';
 
 interface Particle {
   x: number; y: number; vx: number; vy: number;
@@ -121,6 +124,24 @@ function CoffeeModal({ onClose, destination }: { onClose: () => void; destinatio
 function CompletionContent() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [coffeeModal, setCoffeeModal] = useState<string | null>(null);
+  const router = useRouter();
+
+  // Guard: only accessible after passing all modules
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const quizState = raw ? JSON.parse(raw).quizState ?? {} : {};
+      const allPassed = MODULES.every((_, i) => quizState[i] === 'pass');
+      if (!allPassed) {
+        let target = 0;
+        for (let i = 1; i < MODULES.length; i++) {
+          if (quizState[i - 1] === 'pass') target = i;
+          else break;
+        }
+        router.replace(`/module/${target + 1}`);
+      }
+    } catch {}
+  }, [router]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
