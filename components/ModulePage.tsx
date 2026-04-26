@@ -132,7 +132,7 @@ export default function ModulePage({ moduleId }: Props) {
   function submitQuiz() {
     const sels = quizSels[activeTab] ?? [-1, -1, -1];
     const score = quiz.reduce((s, q, i) => s + (sels[i] === q.correct ? 1 : 0), 0);
-    const result = score >= 2 ? 'pass' : 'fail';
+    const result: 'pass' | 'fail' = score >= 2 ? 'pass' : 'fail';
     setQuizState(prev => {
       const next = { ...prev, [activeTab]: result };
       if (result === 'pass' && isLast) {
