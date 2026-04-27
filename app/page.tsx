@@ -1,59 +1,16 @@
 import Link from 'next/link';
 
-const TEAL = { bg: 'rgba(0,128,107,0.1)', stroke: '#00806B' };
-const AMBER = { bg: 'rgba(200,149,108,0.1)', stroke: '#996B3D' };
-
 const MODULES = [
-  {
-    num: '01', title: 'How Software Works', desc: 'Frontend, backend, database — how they connect',
-    color: TEAL,
-    icon: <><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></>,
-  },
-  {
-    num: '02', title: 'APIs & How Systems Talk', desc: 'REST, HTTP methods, status codes',
-    color: AMBER,
-    icon: <><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></>,
-  },
-  {
-    num: '03', title: 'Architecture & Scale', desc: 'Monoliths, microservices, caching, CDNs',
-    color: TEAL,
-    icon: <><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></>,
-  },
-  {
-    num: '04', title: 'Design Systems & UI', desc: 'Components, tokens, Server-Driven UI',
-    color: AMBER,
-    icon: <><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>,
-  },
-  {
-    num: '05', title: 'Performance & Loading', desc: 'LCP, TTI, CLS and lazy loading',
-    color: TEAL,
-    icon: <><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></>,
-  },
-  {
-    num: '06', title: 'State Management', desc: 'Local vs global state, optimistic UI',
-    color: AMBER,
-    icon: <><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.8"/></>,
-  },
-  {
-    num: '07', title: 'Versioning & APIs', desc: 'Semver, breaking changes, deprecation',
-    color: TEAL,
-    icon: <><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></>,
-  },
-  {
-    num: '08', title: 'Auth & Security', desc: 'OAuth, JWT, HTTPS, data privacy',
-    color: AMBER,
-    icon: <><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></>,
-  },
-  {
-    num: '09', title: 'DevOps & Deployment', desc: 'CI/CD, rollbacks, feature flags',
-    color: TEAL,
-    icon: <><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></>,
-  },
-  {
-    num: '10', title: 'Technical Metrics', desc: 'Uptime, latency percentiles, cycle time',
-    color: AMBER,
-    icon: <><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></>,
-  },
+  { num: '01', emoji: '🖥️', title: 'How Software Works', desc: 'Frontend, backend, database — how they connect' },
+  { num: '02', emoji: '🔌', title: 'APIs & How Systems Talk', desc: 'REST, HTTP methods, status codes' },
+  { num: '03', emoji: '🏗️', title: 'Architecture & Scale', desc: 'Monoliths, microservices, caching, CDNs' },
+  { num: '04', emoji: '🎨', title: 'Design Systems & UI', desc: 'Components, tokens, Server-Driven UI' },
+  { num: '05', emoji: '⚡', title: 'Performance & Loading', desc: 'LCP, TTI, CLS and lazy loading' },
+  { num: '06', emoji: '🔄', title: 'State Management', desc: 'Local vs global state, optimistic UI' },
+  { num: '07', emoji: '📦', title: 'Versioning & APIs', desc: 'Semver, breaking changes, deprecation' },
+  { num: '08', emoji: '🔒', title: 'Auth & Security', desc: 'OAuth, JWT, HTTPS, data privacy' },
+  { num: '09', emoji: '🚀', title: 'DevOps & Deployment', desc: 'CI/CD, rollbacks, feature flags' },
+  { num: '10', emoji: '📊', title: 'Technical Metrics', desc: 'Uptime, latency percentiles, cycle time' },
 ];
 
 export default function Home() {
@@ -155,18 +112,10 @@ export default function Home() {
           {MODULES.map((m) => (
             <div key={m.num} className="hp-card">
               <span className="hp-card-num">{m.num}</span>
-              <div className="hp-card-icon-box" style={{ background: m.color.bg }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={m.color.stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  {m.icon}
-                </svg>
-              </div>
+              <span className="hp-card-emoji">{m.emoji}</span>
               <div className="hp-card-body">
                 <div className="hp-card-title">{m.title}</div>
-                <div className="hp-card-desc">{m.desc}</div>
               </div>
-              <svg className="hp-card-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888780" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="9 18 15 12 9 6"/>
-              </svg>
             </div>
           ))}
         </div>
