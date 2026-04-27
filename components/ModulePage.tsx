@@ -33,7 +33,7 @@ interface Props {
 
 export default function ModulePage({ moduleId }: Props) {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const activeTab = moduleId;
   const [view, setView] = useState<'study' | 'quiz'>('study');
   const [quizState, setQuizState] = useState<QuizState>(() => {
@@ -169,9 +169,18 @@ export default function ModulePage({ moduleId }: Props) {
         {/* Top bar */}
         <div className="lang-bar">
           {user ? (
-            <span style={{ fontSize: '.78rem', color: 'var(--green)', fontFamily: 'var(--mono)' }}>
-              ● {user.displayName ?? user.email}
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
+              <span style={{ fontSize: '.78rem', color: 'var(--green)', fontFamily: 'var(--mono)' }}>
+                ● {user.displayName ?? user.email}
+              </span>
+              <button
+                className="auth-btn"
+                onClick={() => logout()}
+                style={{ fontSize: '.72rem', color: 'var(--text3)' }}
+              >
+                Sign out
+              </button>
+            </div>
           ) : (
             <button className="auth-btn" onClick={() => setAuthOpen(true)}>Sign in</button>
           )}
