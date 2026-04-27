@@ -52,6 +52,12 @@ export default function Home() {
             The technical concepts every PM needs — explained with real examples,
             zero jargon, and a quiz to make it stick.
           </p>
+          <p className="hp-creator">
+            Created by{' '}
+            <a href="https://www.linkedin.com/in/thiagoaraujosilva/" target="_blank" rel="noopener noreferrer" className="hp-creator-link">
+              Thiago Araujo
+            </a>
+          </p>
 
           <div className="hp-stats">
             <div className="hp-stat">
