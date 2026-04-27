@@ -115,6 +115,7 @@ export default function Home() {
               <span className="hp-card-emoji">{m.emoji}</span>
               <div className="hp-card-body">
                 <div className="hp-card-title">{m.title}</div>
+                <div className="hp-card-desc">{m.desc}</div>
               </div>
             </div>
           ))}
