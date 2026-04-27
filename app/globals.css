@@ -230,6 +230,8 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
 @media (max-width: 600px) {
   .hp-hero { padding: 2.5rem .5rem 2rem; }
   .hp-stats { gap: 1rem; }
+  .hp-card-desc { max-height: none; opacity: 1; margin-top: .3rem; }
+  .hp-grid:has(.hp-card:hover) .hp-card:not(:hover) { opacity: 1; }
 }
 
 /* DIAGRAM */
