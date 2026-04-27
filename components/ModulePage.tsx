@@ -47,14 +47,8 @@ export default function ModulePage({ moduleId }: Props) {
   // Randomly pick 3 Q&A indices from the pool of 6, per module, per session
   const [qaIndices, setQaIndices] = useState<Record<number, number[]>>({});
   // Inline question state (not synced to Firestore — soft interactions)
-  const [inlineSels, setInlineSels] = useState<Record<string, number>>(() => {
-    if (typeof window === 'undefined') return {};
-    return loadLocal()?.inlineSels ?? {};
-  });
-  const [reflectTexts, setReflectTexts] = useState<Record<string, string>>(() => {
-    if (typeof window === 'undefined') return {};
-    return loadLocal()?.reflectTexts ?? {};
-  });
+  const [inlineSels, setInlineSels] = useState<Record<string, number>>({});
+  const [reflectTexts, setReflectTexts] = useState<Record<string, string>>({});
   const [savedOnce, setSavedOnce] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
 
@@ -103,8 +97,7 @@ export default function ModulePage({ moduleId }: Props) {
 
   useEffect(() => {
     if (!savedOnce) { setSavedOnce(true); return; }
-    const data = { quizState, quizSels, inlineSels, reflectTexts };
-    saveLocal(data);
+    saveLocal({ quizState, quizSels });
     if (user) {
       setDoc(doc(db, 'users', user.uid), {
         quiz_state: quizState,
@@ -112,7 +105,7 @@ export default function ModulePage({ moduleId }: Props) {
         updatedAt: new Date(),
       }, { merge: true }).catch(() => {});
     }
-  }, [quizState, quizSels, inlineSels, reflectTexts, user]);
+  }, [quizState, quizSels, user]);
 
   function isUnlocked(idx: number) {
     if (idx === 0) return true;
