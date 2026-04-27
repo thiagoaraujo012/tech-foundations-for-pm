@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useAuth } from './AuthProvider';
 
-export default function AuthModal({ onClose }: { onClose: () => void }) {
+export default function AuthModal({ onClose, onProceed }: { onClose: () => void; onProceed?: () => void }) {
   const { signInGoogle, signInEmail, signUpEmail } = useAuth();
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
@@ -15,7 +15,7 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
     setError('');
     try {
       await signInGoogle();
-      onClose();
+      onProceed ? onProceed() : onClose();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error signing in');
     }
@@ -28,7 +28,7 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
     try {
       if (mode === 'signin') await signInEmail(email, password);
       else await signUpEmail(email, password);
-      onClose();
+      onProceed ? onProceed() : onClose();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error');
     } finally {
@@ -70,6 +70,17 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
             {mode === 'signin' ? 'Sign up' : 'Sign in'}
           </span>
         </div>
+
+        {onProceed && (
+          <div style={{ textAlign: 'center', marginTop: '1.1rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
+            <button
+              onClick={onProceed}
+              style={{ background: 'none', border: 'none', fontSize: '.78rem', color: 'var(--text3)', cursor: 'pointer', fontFamily: 'var(--font)', textDecoration: 'underline', textDecorationStyle: 'dotted', textUnderlineOffset: '3px' }}
+            >
+              Continue without an account
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

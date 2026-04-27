@@ -1,4 +1,9 @@
-import Link from 'next/link';
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { AuthProvider } from '@/components/AuthProvider';
+import AuthModal from '@/components/AuthModal';
 
 const MODULES = [
   { num: '01', emoji: '🖥️', title: 'How Software Works', desc: 'Frontend, backend, database — how they connect' },
@@ -13,7 +18,18 @@ const MODULES = [
   { num: '10', emoji: '📊', title: 'Technical Metrics', desc: 'Uptime, latency percentiles, cycle time' },
 ];
 
-export default function Home() {
+function HomeContent() {
+  const router = useRouter();
+  const [authOpen, setAuthOpen] = useState(false);
+
+  function handleStart() {
+    setAuthOpen(true);
+  }
+
+  function handleProceed() {
+    router.push('/module/1');
+  }
+
   return (
     <div className="home-page">
 
@@ -89,12 +105,12 @@ export default function Home() {
             </div>
           </div>
 
-          <Link href="/module/1" className="btn-start">
+          <button className="btn-start" onClick={handleStart}>
             Start your journey
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
             </svg>
-          </Link>
+          </button>
         </div>
 
       </div>
@@ -131,9 +147,24 @@ export default function Home() {
       {/* ── Bottom CTA ── */}
       <div className="hp-cta">
         <p className="hp-cta-text">No engineering background required.</p>
-        <Link href="/module/1" className="btn-start">Get started →</Link>
+        <button className="btn-start" onClick={handleStart}>Get started →</button>
       </div>
 
+      {authOpen && (
+        <AuthModal
+          onClose={() => setAuthOpen(false)}
+          onProceed={handleProceed}
+        />
+      )}
+
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <AuthProvider>
+      <HomeContent />
+    </AuthProvider>
   );
 }
