@@ -15,7 +15,7 @@ export default function AuthModal({ onClose, onProceed }: { onClose: () => void;
     setError('');
     try {
       await signInGoogle();
-      onProceed ? onProceed() : onClose();
+      if (onProceed) onProceed(); else onClose();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error signing in');
     }
@@ -28,7 +28,7 @@ export default function AuthModal({ onClose, onProceed }: { onClose: () => void;
     try {
       if (mode === 'signin') await signInEmail(email, password);
       else await signUpEmail(email, password);
-      onProceed ? onProceed() : onClose();
+      if (onProceed) onProceed(); else onClose();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error');
     } finally {

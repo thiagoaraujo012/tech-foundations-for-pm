@@ -39,14 +39,14 @@ export default function BugReportModal({ moduleName, onClose }: Props) {
           <div className="bug-modal-success">
             <div className="bug-modal-success-icon">✓</div>
             <h3 className="bug-modal-title">Report received!</h3>
-            <p className="bug-modal-sub">Thanks for helping improve the course. We'll look into it.</p>
+            <p className="bug-modal-sub">Thanks for helping improve the course. We&apos;ll look into it.</p>
             <button className="bug-modal-btn-primary" onClick={onClose}>Close</button>
           </div>
         ) : (
           <>
             <h3 className="bug-modal-title">Found an issue?</h3>
             <p className="bug-modal-sub">
-              Tell us what went wrong{moduleName ? ` in ${moduleName}` : ''} and we'll fix it.
+              Tell us what went wrong{moduleName ? ` in ${moduleName}` : ''} and we&apos;ll fix it.
             </p>
 
             <form onSubmit={handleSubmit} className="bug-modal-form">
