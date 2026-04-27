@@ -49,12 +49,12 @@ export default function Home() {
         <div className="hp-grid">
           {MODULES.map((m) => (
             <div key={m.num} className="hp-card">
-              <div className="hp-card-top">
-                <span className="hp-card-emoji">{m.emoji}</span>
-                <span className="hp-card-num">{m.num}</span>
+              <span className="hp-card-num">{m.num}</span>
+              <span className="hp-card-emoji">{m.emoji}</span>
+              <div className="hp-card-body">
+                <div className="hp-card-title">{m.title}</div>
+                <div className="hp-card-desc">{m.desc}</div>
               </div>
-              <div className="hp-card-title">{m.title}</div>
-              <div className="hp-card-desc">{m.desc}</div>
             </div>
           ))}
         </div>
