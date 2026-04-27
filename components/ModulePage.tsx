@@ -8,6 +8,7 @@ import { useAuth } from './AuthProvider';
 import { MODULES } from '@/data/modules';
 import { DIAGRAMS } from './diagrams';
 import AuthModal from './AuthModal';
+import BugReportModal from './BugReportModal';
 
 type QuizState = Record<number, 'pass' | 'fail'>;
 type QuizSelections = Record<number, number[]>;
@@ -44,6 +45,7 @@ export default function ModulePage({ moduleId }: Props) {
     return loadLocal()?.quizSels ?? {};
   });
   const [authOpen, setAuthOpen] = useState(false);
+  const [bugOpen, setBugOpen] = useState(false);
   // Randomly pick 3 Q&A indices from the pool of 6, per module, per session
   const [qaIndices, setQaIndices] = useState<Record<number, number[]>>({});
   // Inline question state (not synced to Firestore — soft interactions)
@@ -342,12 +344,9 @@ export default function ModulePage({ moduleId }: Props) {
             </button>
 
             <div className="report-issue-wrap">
-              <a
-                href={`mailto:thiagobateraster@gmail.com?subject=Tech Foundations – Module ${activeTab + 1}: Issue Report`}
-                className="report-issue-link"
-              >
+              <button className="report-issue-link" onClick={() => setBugOpen(true)}>
                 Found an error? Report it
-              </a>
+              </button>
             </div>
           </>
         ) : (
@@ -424,6 +423,12 @@ export default function ModulePage({ moduleId }: Props) {
       </div>
 
       {authOpen && <AuthModal onClose={() => setAuthOpen(false)} />}
+      {bugOpen && (
+        <BugReportModal
+          moduleName={`Module ${activeTab + 1}: ${mod.title}`}
+          onClose={() => setBugOpen(false)}
+        />
+      )}
     </>
   );
 }

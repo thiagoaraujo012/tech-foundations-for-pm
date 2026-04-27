@@ -135,7 +135,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
 .goto-quiz { display: block; width: 100%; margin-top: 2rem; padding: 1rem; border-radius: 12px; border: 1px solid var(--amber); background: rgba(240,180,41,0.06); color: var(--amber); font-family: var(--font); font-size: .92rem; font-weight: 700; cursor: pointer; transition: all .25s; text-align: center; letter-spacing: .2px; }
 .goto-quiz:hover { background: rgba(240,180,41,0.12); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(240,180,41,.15); }
 .report-issue-wrap { text-align: center; margin-top: 1.25rem; }
-.report-issue-link { font-size: .78rem; color: var(--text3); text-decoration: none; border-bottom: 1px dashed var(--border); padding-bottom: 1px; transition: color .2s; }
+.report-issue-link { font-size: .78rem; color: var(--text3); background: none; border: none; border-bottom: 1px dashed var(--border); padding: 0 0 1px; cursor: pointer; font-family: var(--font); transition: color .2s; }
 .report-issue-link:hover { color: var(--text2); }
 
 /* AUTH */
@@ -270,6 +270,27 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
 .inline-reflect-input { width: 100%; padding: .7rem 1rem; border-radius: 8px; border: 1px solid var(--green-border); background: var(--surface); color: var(--text); font-family: var(--font); font-size: .86rem; line-height: 1.6; resize: vertical; outline: none; transition: border-color .2s; }
 .inline-reflect-input:focus { border-color: var(--green); }
 .inline-reflect-input::placeholder { color: var(--text3); }
+
+/* BUG REPORT MODAL */
+.bug-modal-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(28,20,16,.55); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+.bug-modal { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 2.25rem 2rem 2rem; width: 100%; max-width: 440px; box-shadow: 0 24px 80px rgba(28,20,16,.18); }
+.bug-modal-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1rem; color: var(--text3); cursor: pointer; line-height: 1; padding: .25rem .4rem; border-radius: 6px; transition: color .2s, background .2s; }
+.bug-modal-close:hover { color: var(--text); background: var(--surface2); }
+.bug-modal-title { font-family: var(--font); font-size: 1.2rem; font-weight: 800; color: var(--text); margin-bottom: .4rem; letter-spacing: -.2px; }
+.bug-modal-sub { font-size: .875rem; color: var(--text3); line-height: 1.55; margin-bottom: 1.5rem; }
+.bug-modal-form { display: flex; flex-direction: column; gap: 1rem; }
+.bug-modal-label { display: flex; flex-direction: column; gap: .35rem; font-size: .8rem; font-weight: 700; color: var(--text2); letter-spacing: .2px; text-transform: uppercase; }
+.bug-modal-input, .bug-modal-textarea { font-family: var(--font); font-size: .9rem; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: .65rem .9rem; outline: none; transition: border-color .2s; resize: none; }
+.bug-modal-input:focus, .bug-modal-textarea:focus { border-color: var(--amber); }
+.bug-modal-input::placeholder, .bug-modal-textarea::placeholder { color: var(--text3); }
+.bug-modal-btn-primary { margin-top: .25rem; padding: .8rem 1.5rem; background: var(--amber); color: #fff; border: none; border-radius: 10px; font-family: var(--font); font-size: .92rem; font-weight: 700; cursor: pointer; transition: opacity .2s; }
+.bug-modal-btn-primary:hover { opacity: .88; }
+.bug-modal-btn-primary:disabled { opacity: .5; cursor: default; }
+.bug-modal-error { font-size: .83rem; color: var(--red); margin-top: -.25rem; }
+.bug-modal-success { text-align: center; padding: 1rem 0 .5rem; }
+.bug-modal-success-icon { width: 3rem; height: 3rem; border-radius: 50%; background: var(--green-bg); border: 2px solid var(--green); color: var(--green); font-size: 1.4rem; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; }
+.bug-modal-success .bug-modal-title { margin-bottom: .5rem; }
+.bug-modal-success .bug-modal-sub { margin-bottom: 1.5rem; }
 
 /* FOOTER */
 .footer { text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); font-size: .78rem; color: var(--text3); }
