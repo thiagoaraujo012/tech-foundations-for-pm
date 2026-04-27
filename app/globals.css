@@ -134,6 +134,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
 .quiz-retry:hover { background: rgba(239,107,107,.07); }
 .goto-quiz { display: block; width: 100%; margin-top: 2rem; padding: 1rem; border-radius: 12px; border: 1px solid var(--amber); background: rgba(240,180,41,0.06); color: var(--amber); font-family: var(--font); font-size: .92rem; font-weight: 700; cursor: pointer; transition: all .25s; text-align: center; letter-spacing: .2px; }
 .goto-quiz:hover { background: rgba(240,180,41,0.12); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(240,180,41,.15); }
+.report-issue-wrap { text-align: center; margin-top: 1.25rem; }
+.report-issue-link { font-size: .78rem; color: var(--text3); text-decoration: none; border-bottom: 1px dashed var(--border); padding-bottom: 1px; transition: color .2s; }
+.report-issue-link:hover { color: var(--text2); }
 
 /* AUTH */
 .lang-bar { display: flex; justify-content: flex-end; margin-bottom: 1rem; position: relative; z-index: 20; gap: .6rem; align-items: center; }

@@ -277,6 +277,21 @@ function CompletionContent() {
           scope more accurately, and build things that matter.
         </p>
 
+        <a
+          href="mailto:thiagobateraster@gmail.com?subject=Tech Foundations – Feedback"
+          style={{
+            display: 'inline-block', marginBottom: '1.25rem',
+            padding: '0.75rem 2rem',
+            background: 'transparent', color: 'rgba(255,255,255,0.85)',
+            border: '1px solid rgba(255,255,255,0.3)', borderRadius: '10px',
+            fontFamily: 'var(--font)', fontSize: '0.9rem', fontWeight: 600,
+            textDecoration: 'none', letterSpacing: '0.1px',
+            transition: 'border-color .2s, color .2s',
+          }}
+        >
+          Leave your feedback
+        </a>
+
         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
           <button
             onClick={() => setCoffeeModal('/module/1')}

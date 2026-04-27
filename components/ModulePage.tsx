@@ -340,6 +340,15 @@ export default function ModulePage({ moduleId }: Props) {
             <button className="goto-quiz" onClick={() => { setView('quiz'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
               Go to Module Assessment →
             </button>
+
+            <div className="report-issue-wrap">
+              <a
+                href={`mailto:thiagobateraster@gmail.com?subject=Tech Foundations – Module ${activeTab + 1}: Issue Report`}
+                className="report-issue-link"
+              >
+                Found an error? Report it
+              </a>
+            </div>
           </>
         ) : (
           /* Quiz */
