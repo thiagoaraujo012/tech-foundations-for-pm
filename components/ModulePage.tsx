@@ -396,8 +396,10 @@ export default function ModulePage({ moduleId }: Props) {
                     let cls = 'quiz-opt';
                     if (quizDone) {
                       cls += ' locked';
-                      if (oi === q.correct) cls += ' correct';
+                      if (oi === sel && sel === q.correct) cls += ' correct';
                       else if (oi === sel && sel !== q.correct) cls += ' wrong';
+                      // only reveal unselected correct answer on perfect score
+                      else if (score === 3 && oi === q.correct) cls += ' correct';
                     } else if (oi === sel) cls += ' selected';
                     return (
                       <button key={oi} className={cls} onClick={() => selectQuizOpt(qi, oi)}>{opt}</button>
