@@ -43,10 +43,9 @@ function OnboardingContent() {
 
     setLoading(true);
     setError('');
-    localStorage.setItem('onboardingCompleted', 'true');
 
     try {
-      await fetch('/api/onboarding', {
+      const res = await fetch('/api/onboarding', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -58,10 +57,14 @@ function OnboardingContent() {
           uid: user?.uid ?? null,
         }),
       });
+      if (!res.ok) throw new Error('API error');
     } catch {
-      // non-blocking — don't prevent user from continuing
+      setError('Something went wrong saving your answers. Please try again.');
+      setLoading(false);
+      return;
     }
 
+    localStorage.setItem('onboardingCompleted', 'true');
     router.push('/module/1');
   }
 
