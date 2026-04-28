@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthProvider } from '@/components/AuthProvider';
 import AuthModal from '@/components/AuthModal';
+import OnboardingModal from '@/components/OnboardingModal';
 
 const MODULES = [
   { num: '01', emoji: '🖥️', title: 'How Software Works', desc: 'Frontend, backend, database — how they connect' },
@@ -21,14 +22,25 @@ const MODULES = [
 function HomeContent() {
   const router = useRouter();
   const [authOpen, setAuthOpen] = useState(false);
+  const [onboardingOpen, setOnboardingOpen] = useState(false);
 
   function handleStart() {
     setAuthOpen(true);
   }
 
   function handleProceed() {
+    setAuthOpen(false);
     const done = typeof window !== 'undefined' && localStorage.getItem('onboardingCompleted');
-    router.push(done ? '/module/1' : '/onboarding');
+    if (done) {
+      router.push('/module/1');
+    } else {
+      setOnboardingOpen(true);
+    }
+  }
+
+  function handleOnboardingDone() {
+    setOnboardingOpen(false);
+    router.push('/module/1');
   }
 
   return (
@@ -156,6 +168,10 @@ function HomeContent() {
           onClose={() => setAuthOpen(false)}
           onProceed={handleProceed}
         />
+      )}
+
+      {onboardingOpen && (
+        <OnboardingModal onDone={handleOnboardingDone} />
       )}
 
     </div>
