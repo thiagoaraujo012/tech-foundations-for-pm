@@ -195,7 +195,7 @@ export default function ModulePage({ moduleId }: Props) {
               </span>
               <button
                 className="auth-btn"
-                onClick={() => logout()}
+                onClick={async () => { await logout(); router.push('/'); }}
                 style={{ fontSize: '.72rem', color: 'var(--text3)' }}
               >
                 Sign out
