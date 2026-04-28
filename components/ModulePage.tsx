@@ -2,8 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { useAuth } from './AuthProvider';
 import { MODULES } from '@/data/modules';
 import { DIAGRAMS } from './diagrams';
@@ -33,7 +31,7 @@ interface Props {
 
 export default function ModulePage({ moduleId }: Props) {
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user, logout, getIdToken } = useAuth();
   const activeTab = moduleId;
   const [view, setView] = useState<'study' | 'quiz'>('study');
   const [quizState, setQuizState] = useState<QuizState>(() => {
@@ -87,27 +85,49 @@ export default function ModulePage({ moduleId }: Props) {
     }
   }, [activeTab]);
 
+  // Load progress from server when user logs in
   useEffect(() => {
     if (!user) return;
-    getDoc(doc(db, 'users', user.uid)).then((snap) => {
-      if (!snap.exists()) return;
-      const data = snap.data();
-      if (data.quiz_state) setQuizState(data.quiz_state);
-      if (data.quiz_sels) setQuizSels(data.quiz_sels);
+    getIdToken().then(token => {
+      if (!token) return;
+      fetch('/api/progress', { headers: { Authorization: `Bearer ${token}` } })
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (!data) return;
+          const hasServerProgress = Object.keys(data.quizState ?? {}).length > 0;
+          if (data.quizState) setQuizState(data.quizState);
+          if (data.quizSels) setQuizSels(data.quizSels);
+          // Redirect to furthest unlocked module if server has more progress than current view
+          if (hasServerProgress) {
+            let furthest = 0;
+            for (let i = 1; i < MODULES.length; i++) {
+              if (data.quizState[i - 1] === 'pass') furthest = i;
+              else break;
+            }
+            if (furthest > 0 && activeTab === 0) {
+              router.replace(`/module/${furthest + 1}`);
+            }
+          }
+        })
+        .catch(() => {});
     });
-  }, [user]);
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Save progress locally and to server on every quiz change
   useEffect(() => {
     if (!savedOnce) { setSavedOnce(true); return; }
     saveLocal({ quizState, quizSels });
     if (user) {
-      setDoc(doc(db, 'users', user.uid), {
-        quiz_state: quizState,
-        quiz_sels: quizSels,
-        updatedAt: new Date(),
-      }, { merge: true }).catch(() => {});
+      getIdToken().then(token => {
+        if (!token) return;
+        fetch('/api/progress', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ quizState, quizSels }),
+        }).catch(() => {});
+      });
     }
-  }, [quizState, quizSels, user]);
+  }, [quizState, quizSels, user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function isUnlocked(idx: number) {
     if (idx === 0) return true;
