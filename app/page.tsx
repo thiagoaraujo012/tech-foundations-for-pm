@@ -4,8 +4,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthProvider } from '@/components/AuthProvider';
 import AuthModal from '@/components/AuthModal';
-import { auth, db } from '@/lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
 
 const MODULES = [
   { num: '01', emoji: '🖥️', title: 'How Software Works', desc: 'Frontend, backend, database — how they connect' },
@@ -28,24 +26,9 @@ function HomeContent() {
     setAuthOpen(true);
   }
 
-  async function handleProceed() {
-    const localDone = typeof window !== 'undefined' && localStorage.getItem('onboardingCompleted');
-    if (localDone) { router.push('/module/1'); return; }
-
-    const currentUser = auth.currentUser;
-    if (!currentUser) { router.push('/onboarding'); return; }
-
-    try {
-      const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-      if (userDoc.exists() && userDoc.data()?.onboardingCompleted) {
-        localStorage.setItem('onboardingCompleted', 'true');
-        router.push('/module/1');
-      } else {
-        router.push('/onboarding');
-      }
-    } catch {
-      router.push('/onboarding');
-    }
+  function handleProceed() {
+    const done = typeof window !== 'undefined' && localStorage.getItem('onboardingCompleted');
+    router.push(done ? '/module/1' : '/onboarding');
   }
 
   return (

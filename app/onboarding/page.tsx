@@ -44,25 +44,19 @@ function OnboardingContent() {
     setLoading(true);
     setError('');
 
-    try {
-      const res = await fetch('/api/onboarding', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          isPM,
-          role: role.trim(),
-          experience,
-          gender,
-          country,
-          uid: user?.uid ?? null,
-        }),
-      });
-      if (!res.ok) throw new Error('API error');
-    } catch {
-      setError('Something went wrong saving your answers. Please try again.');
-      setLoading(false);
-      return;
-    }
+    // fire-and-forget — don't block the user if the API fails
+    fetch('/api/onboarding', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        isPM,
+        role: role.trim(),
+        experience,
+        gender,
+        country,
+        uid: user?.uid ?? null,
+      }),
+    }).catch(() => {});
 
     localStorage.setItem('onboardingCompleted', 'true');
     router.push('/module/1');
