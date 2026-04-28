@@ -30,7 +30,20 @@ export default function AuthModal({ onClose, onProceed }: { onClose: () => void;
       else await signUpEmail(email, password);
       if (onProceed) onProceed(); else onClose();
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Error');
+      const code = (e as { code?: string }).code ?? '';
+      if (mode === 'signin' && (code === 'auth/invalid-credential' || code === 'auth/user-not-found')) {
+        setError('No account found with this email. Please sign up first.');
+        setMode('signup');
+      } else if (mode === 'signup' && code === 'auth/email-already-in-use') {
+        setError('An account already exists with this email. Please sign in instead.');
+        setMode('signin');
+      } else if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
+        setError('Incorrect password. Please try again.');
+      } else if (code === 'auth/too-many-requests') {
+        setError('Too many attempts. Please wait a moment and try again.');
+      } else {
+        setError('Something went wrong. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
