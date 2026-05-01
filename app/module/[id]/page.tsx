@@ -4,11 +4,12 @@ import ModulePage from '@/components/ModulePage';
 import { MODULES } from '@/data/modules';
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function ModuleRoute({ params }: Props) {
-  const id = parseInt(params.id, 10) - 1; // URL is 1-indexed, array is 0-indexed
+  const { id: rawId } = await params;
+  const id = parseInt(rawId, 10) - 1; // URL is 1-indexed, array is 0-indexed
 
   if (isNaN(id) || id < 0 || id >= MODULES.length) {
     redirect('/module/1');
