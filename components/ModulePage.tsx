@@ -29,10 +29,13 @@ interface Props {
   moduleId: number;
 }
 
+const CREATOR_EMAIL = 'mainnontechpm@gmail.com';
+
 export default function ModulePage({ moduleId }: Props) {
   const router = useRouter();
-  const { user, logout, getIdToken } = useAuth();
+  const { user, loading, logout, getIdToken } = useAuth();
   const activeTab = moduleId;
+  const isCreator = user?.email === CREATOR_EMAIL;
   const [view, setView] = useState<'study' | 'quiz'>('study');
   const [quizState, setQuizState] = useState<QuizState>(() => {
     if (typeof window === 'undefined') return {};
@@ -62,6 +65,8 @@ export default function ModulePage({ moduleId }: Props) {
 
   // Guard: redirect to the last unlocked module if URL is accessed directly
   useEffect(() => {
+    if (loading) return;
+    if (isCreator) return;
     if (activeTab === 0) return;
     if (quizState[activeTab - 1] === 'pass') return;
     // Find the furthest reachable module
@@ -71,7 +76,7 @@ export default function ModulePage({ moduleId }: Props) {
       else break;
     }
     router.replace(`/module/${target + 1}`);
-  }, [activeTab, quizState]);
+  }, [activeTab, quizState, isCreator, loading]);
 
   // Randomize 3 Q&As from the pool each time a module is visited
   useEffect(() => {
@@ -130,6 +135,7 @@ export default function ModulePage({ moduleId }: Props) {
   }, [quizState, quizSels, user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function isUnlocked(idx: number) {
+    if (isCreator) return true;
     if (idx === 0) return true;
     return quizState[idx - 1] === 'pass';
   }
