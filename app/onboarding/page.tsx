@@ -44,19 +44,15 @@ function OnboardingContent() {
     setLoading(true);
     setError('');
 
-    // fire-and-forget — don't block the user if the API fails
-    fetch('/api/onboarding', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        isPM,
-        role: role.trim(),
-        experience,
-        gender,
-        country,
-        uid: user?.uid ?? null,
-      }),
-    }).catch(() => {});
+    try {
+      await fetch('/api/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isPM, role: role.trim(), experience, gender, country, uid: user?.uid ?? null }),
+      });
+    } catch {
+      // proceed even if API fails — don't block the user
+    }
 
     localStorage.setItem(`onboardingCompleted_${user?.uid ?? 'guest'}`, 'true');
     router.push('/module/1');

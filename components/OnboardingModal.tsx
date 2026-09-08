@@ -31,7 +31,7 @@ export default function OnboardingModal({ onDone }: { onDone: () => void }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (isPM === null) { setError('Please answer the first question.'); return; }
     if (!isPM && !role.trim()) { setError('Please tell us your role.'); return; }
@@ -42,11 +42,15 @@ export default function OnboardingModal({ onDone }: { onDone: () => void }) {
     setLoading(true);
     setError('');
 
-    fetch('/api/onboarding', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ isPM, role: role.trim(), experience, gender, country, uid: user?.uid ?? null }),
-    }).catch(() => {});
+    try {
+      await fetch('/api/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isPM, role: role.trim(), experience, gender, country, uid: user?.uid ?? null }),
+      });
+    } catch {
+      // proceed even if API fails — don't block the user
+    }
 
     localStorage.setItem(`onboardingCompleted_${user?.uid ?? 'guest'}`, 'true');
     onDone();
