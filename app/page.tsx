@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AuthProvider } from '@/components/AuthProvider';
+import { AuthProvider, useAuth } from '@/components/AuthProvider';
 import AuthModal from '@/components/AuthModal';
 import OnboardingModal from '@/components/OnboardingModal';
 
@@ -21,6 +21,7 @@ const MODULES = [
 
 function HomeContent() {
   const router = useRouter();
+  const { user } = useAuth();
   const [authOpen, setAuthOpen] = useState(false);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
 
@@ -30,7 +31,8 @@ function HomeContent() {
 
   function handleProceed() {
     setAuthOpen(false);
-    const done = typeof window !== 'undefined' && localStorage.getItem('onboardingCompleted');
+    const uid = user?.uid ?? 'guest';
+    const done = typeof window !== 'undefined' && localStorage.getItem(`onboardingCompleted_${uid}`);
     if (done) {
       router.push('/module/1');
     } else {

@@ -100,8 +100,10 @@ export default function ModulePage({ moduleId }: Props) {
         .then(data => {
           if (!data) return;
           const hasServerProgress = Object.keys(data.quizState ?? {}).length > 0;
-          if (data.quizState) setQuizState(data.quizState);
-          if (data.quizSels) setQuizSels(data.quizSels);
+          // Always override local state with server state (even if empty) to prevent cross-user leakage
+          setQuizState(data.quizState ?? {});
+          setQuizSels(data.quizSels ?? {});
+          saveLocal({ quizState: data.quizState ?? {}, quizSels: data.quizSels ?? {} });
           // Redirect to furthest unlocked module if server has more progress than current view
           if (hasServerProgress) {
             let furthest = 0;

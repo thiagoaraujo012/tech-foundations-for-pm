@@ -58,12 +58,12 @@ function OnboardingContent() {
       }),
     }).catch(() => {});
 
-    localStorage.setItem('onboardingCompleted', 'true');
+    localStorage.setItem(`onboardingCompleted_${user?.uid ?? 'guest'}`, 'true');
     router.push('/module/1');
   }
 
   function skip() {
-    localStorage.setItem('onboardingCompleted', 'true');
+    localStorage.setItem(`onboardingCompleted_${user?.uid ?? 'guest'}`, 'true');
     router.push('/module/1');
   }
 

@@ -48,12 +48,12 @@ export default function OnboardingModal({ onDone }: { onDone: () => void }) {
       body: JSON.stringify({ isPM, role: role.trim(), experience, gender, country, uid: user?.uid ?? null }),
     }).catch(() => {});
 
-    localStorage.setItem('onboardingCompleted', 'true');
+    localStorage.setItem(`onboardingCompleted_${user?.uid ?? 'guest'}`, 'true');
     onDone();
   }
 
   function skip() {
-    localStorage.setItem('onboardingCompleted', 'true');
+    localStorage.setItem(`onboardingCompleted_${user?.uid ?? 'guest'}`, 'true');
     onDone();
   }
 
