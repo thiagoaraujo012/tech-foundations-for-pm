@@ -1,28 +1,105 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Instrument+Serif:ital@0;1&display=swap');
 
 :root {
-  --bg: #FFF5ED;
-  --surface: #FFFFFF;
-  --surface2: #FFF0E5;
-  --border: #E8D5C4;
-  --text: #1C1410;
-  --text2: #6B5040;
-  --text3: #A08878;
-  --green: #00896F;
-  --green-bg: rgba(0,137,111,0.08);
-  --green-border: rgba(0,137,111,0.28);
-  --amber: #B8780A;
-  --purple: #5E4DC4;
-  --purple-bg: rgba(94,77,196,0.08);
-  --blue: #2468C4;
-  --blue-bg: rgba(36,104,196,0.08);
-  --red: #C43030;
-  --font: 'Plus Jakarta Sans', sans-serif;
+  /* ---------------------------------------------------------------------
+     Fundo e superfícies
+     Antes: #0B0B10 / #141419 / #1C1C24, sólidos e com tinta azulada.
+     Agora: preto puro e superfícies em branco translúcido.
+     Motivo: superfície sólida cria uma "caixa" visível quando empilhada
+     sobre gradiente, grain ou vídeo. Branco em baixa opacidade acompanha
+     o que estiver atrás e sustenta a linguagem de vidro.
+     --------------------------------------------------------------------- */
+  --bg: #000000;
+  --surface: rgba(255, 255, 255, 0.03);
+  --surface2: rgba(255, 255, 255, 0.06);
+  --surface-solid: #0A0A0A;          /* NOVO: fallback onde translúcido não serve */
+
+  /* ---------------------------------------------------------------------
+     Bordas
+     Antes: #2A2A36 sólido. Agora translúcido, para funcionar sobre
+     qualquer camada.
+     --------------------------------------------------------------------- */
+  --border: rgba(255, 255, 255, 0.16);
+  --border-soft: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(198, 198, 198, 0.55);   /* NOVO: borda de vidro/metal */
+
+  /* ---------------------------------------------------------------------
+     Texto
+     Antes: #DDDDE4 / #8E8EA0 / #5C5C70, todos com tinta azul-lilás.
+     Agora: neutros puros. O #9A9A9A é o cinza exato do prompt de origem
+     e é o que dá a leitura de "quieto" no lede e nas legendas.
+     --------------------------------------------------------------------- */
+  --text: #FFFFFF;
+  --text2: #9A9A9A;
+  --text3: #6A6A6A;
+  --stat: #D8D8D8;                   /* NOVO: números e rodapé de prova */
+
+  /* ---------------------------------------------------------------------
+     Cores semânticas
+     Mantidas com os mesmos nomes, porque carregam significado no curso
+     (estado de módulo, callouts, syntax highlight). Foram dessaturadas
+     entre 8 e 12 por cento: sobre preto puro elas ficam mais vibrantes do
+     que ficavam sobre #0B0B10, e no valor original brigam com o vidro.
+
+     Regra de uso: cor semântica só sinaliza estado. Nunca decora chrome,
+     borda de card neutro, hover genérico ou gradiente de fundo.
+     --------------------------------------------------------------------- */
+  --green: #2BBEA4;
+  --green-bg: rgba(43, 190, 164, 0.07);
+  --green-border: rgba(43, 190, 164, 0.20);
+  --amber: #E0AE3B;
+  --purple: #9A8DE0;
+  --purple-bg: rgba(154, 141, 224, 0.07);
+  --blue: #5F97E6;
+  --blue-bg: rgba(95, 151, 230, 0.07);
+  --red: #E06B6B;
+
+  /* ---------------------------------------------------------------------
+     Vidro e metal — NOVO
+     --------------------------------------------------------------------- */
+  --glass-glow: rgba(186, 208, 255, 0.35);
+  --glass-glow-soft: rgba(170, 200, 255, 0.22);
+  --metal-1: #050505;
+  --metal-2: #2A2A2A;
+  --metal-3: #4A4A4A;
+
+  /* ---------------------------------------------------------------------
+     Tipografia
+     IBM Plex Sans permanece como face de interface e corpo. JetBrains Mono
+     permanece para código. Instrument Serif entra apenas para o trecho em
+     destaque do H1.
+
+     Se preferir o swap completo do prompt de origem, troque --font por
+     'Inter'. Nesse caso ajuste --h1-track para -0.045em: a Inter suporta
+     tracking mais fechado que a Plex.
+     --------------------------------------------------------------------- */
+  --font: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
   --mono: 'JetBrains Mono', monospace;
+  --font-display: 'Instrument Serif', 'Times New Roman', Times, serif;  /* NOVO */
+  --h1-track: -0.032em;              /* NOVO: calibrado para IBM Plex Sans */
+
+  /* ---------------------------------------------------------------------
+     Escala — NOVO. Base ~1440px.
+     --------------------------------------------------------------------- */
+  --h1: 48px;
+  --lede: 15.5px;
+  --nav-fs: 14px;
+  --nav-h: 40px;
+  --btn-fs: 13.5px;
+  --btn-h: 40px;
+  --hero-btn-h: 42px;
+  --badge-fs: 12.5px;
+  --stat-fs: 13.5px;
+
+  --header-y: 22px;
+  --header-x: 40px;
+  --hero-gap: 85px;
+  --copy-max: 860px;
+  --lede-max: 470px;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.7; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
 .wrap { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
 
 /* NAV */
@@ -184,17 +261,62 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
 
 /* HOME */
 /* ── Homepage ──────────────────────────────────────────── */
-.home-page { max-width: 860px; margin: 0 auto; padding: 0 1.5rem 5rem; }
+.home-page { max-width: 860px; margin: 0 auto; padding: 0 1.5rem 5rem; position: relative; z-index: 0; }
 
-.hp-hero { text-align: center; padding: 4rem 1rem 3.5rem; position: relative; overflow: hidden; }
-.hp-hero-dot-pattern { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: .25; }
-.hp-hero-circle-tr { position: absolute; top: -60px; right: -60px; width: 200px; height: 200px; border-radius: 50%; border: 2px solid rgba(200,149,108,0.15); pointer-events: none; z-index: 0; }
-.hp-hero-circle-bl { position: absolute; bottom: -40px; left: -40px; width: 140px; height: 140px; border-radius: 50%; border: 2px solid rgba(0,128,107,0.1); pointer-events: none; z-index: 0; }
+.hp-stars-layer { position: fixed; inset: 0; z-index: -1; pointer-events: none; transition: transform .25s ease-out; will-change: transform; }
+.hp-grain-bg { width: 100%; height: 100%; opacity: .5; mix-blend-mode: screen; }
+
+.hp-hero { text-align: center; padding: 6rem 1rem 4.5rem; min-height: 640px; display: flex; align-items: center; justify-content: center; position: relative; }
+.hp-parallax-layer {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  transition: transform .25s ease-out; will-change: transform;
+}
+.hp-wave-bg {
+  position: absolute; top: 0; left: 50%; width: 100vw; height: 100%; margin-left: -50vw;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%);
+}
+.hp-wave-path { transform-origin: 50% 50%; transform-box: fill-box; }
+.hp-wave-path-1 { animation: hp-wave-sway 9s ease-in-out infinite; }
+.hp-wave-path-2 { animation: hp-wave-sway 12s ease-in-out infinite reverse; animation-delay: -3s; }
+
+@keyframes hp-wave-sway {
+  0%   { transform: translateY(0) rotate(0deg) scaleY(1); }
+  50%  { transform: translateY(-34px) rotate(1.6deg) scaleY(1.08); }
+  100% { transform: translateY(0) rotate(0deg) scaleY(1); }
+}
+
 .hp-hero-content { position: relative; z-index: 1; }
+
+.hp-badge, .hp-title, .hp-desc, .hp-creator, .hp-stats, .hp-hero-content .btn-start {
+  opacity: 0;
+  animation: hp-fade-up .7s ease-out forwards;
+}
+.hp-badge { animation-delay: .05s; }
+.hp-title { animation-delay: .15s; }
+.hp-desc { animation-delay: .3s; }
+.hp-creator { animation-delay: .4s; }
+.hp-stats { animation-delay: .5s; }
+.hp-hero-content .btn-start { animation-delay: .6s; }
+
+@keyframes hp-fade-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-wave-path-1, .hp-wave-path-2 { animation: none; }
+  .hp-parallax-layer, .hp-stars-layer { transition: none; transform: none !important; }
+  .hp-badge, .hp-title, .hp-desc, .hp-creator, .hp-stats, .hp-hero-content .btn-start {
+    animation: none;
+    opacity: 1;
+  }
+}
+
 .hp-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(200,149,108,0.15); padding: 6px 16px; border-radius: 20px; margin-bottom: 1.25rem; }
 .hp-badge-text { font-size: 11px; font-weight: 500; letter-spacing: 2px; color: #996B3D; text-transform: uppercase; }
 .hp-title { font-size: clamp(4rem, 9vw, 5.5rem); font-weight: 800; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 1.25rem; color: var(--text); }
-.hp-title-accent { color: var(--green); }
+.hp-title-accent { color: var(--purple); }
 .hp-desc { font-size: .97rem; color: var(--text2); max-width: 480px; margin: 0 auto 2rem; line-height: 1.8; }
 
 .hp-creator { font-size: .78rem; color: var(--text3); margin-bottom: 2rem; }
@@ -205,7 +327,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
 .hp-stat { display: flex; flex-direction: column; align-items: center; padding: 16px 28px; }
 .hp-stat:not(:last-child) { border-right: 1px solid rgba(200,149,108,0.2); }
 .hp-stat-icon-box { width: 40px; height: 40px; border-radius: 10px; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; }
-.hp-stat-num { font-family: var(--mono); font-size: 1.4rem; font-weight: 700; color: var(--green); }
+.hp-stat-num { font-family: var(--mono); font-size: 1.4rem; font-weight: 700; color: var(--purple); }
 .hp-stat-label { font-size: .7rem; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-top: .15rem; }
 
 .btn-start { display: inline-flex; align-items: center; gap: 8px; padding: 16px 40px; border-radius: 30px; border: none; background: linear-gradient(135deg, var(--green), #00A88E); color: #fff; font-family: var(--font); font-size: 1rem; font-weight: 700; cursor: pointer; transition: transform .2s ease, box-shadow .2s ease; text-decoration: none; letter-spacing: .1px; }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef, type MouseEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthProvider, useAuth } from '@/components/AuthProvider';
 import AuthModal from '@/components/AuthModal';
@@ -24,6 +24,45 @@ function HomeContent() {
   const { user } = useAuth();
   const [authOpen, setAuthOpen] = useState(false);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
+  const [heroMouse, setHeroMouse] = useState({ x: 0, y: 0 });
+  const waveRef = useRef<SVGSVGElement>(null);
+  const [waveSize, setWaveSize] = useState({ w: 1440, h: 700 });
+
+  useEffect(() => {
+    function measureWave() {
+      const el = waveRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      if (rect.width && rect.height) {
+        setWaveSize({ w: rect.width, h: rect.height });
+      }
+    }
+    measureWave();
+    window.addEventListener('resize', measureWave);
+    return () => window.removeEventListener('resize', measureWave);
+  }, []);
+
+  // Wave path control points as fractions of the SVG's own pixel box, so the
+  // ribbon's proportions never distort or over-crop regardless of viewport
+  // aspect ratio — viewBox is set to match the real rendered size 1:1.
+  const { w: waveW, h: waveH } = waveSize;
+  // Single, deep cubic arc per path (not a full S) — the amplitude is deliberately
+  // large relative to stroke width + blur so the curve reads as a wave, not a
+  // straight glowing beam once blurred.
+  const wavePath1 = `M ${-0.2 * waveW} ${0.22 * waveH} C ${0.22 * waveW} ${0.88 * waveH}, ${0.58 * waveW} ${0.88 * waveH}, ${1.2 * waveW} ${0.15 * waveH}`;
+  const wavePath2 = `M ${-0.2 * waveW} ${0.78 * waveH} C ${0.32 * waveW} ${0.12 * waveH}, ${0.62 * waveW} ${0.12 * waveH}, ${1.2 * waveW} ${0.85 * waveH}`;
+
+  function handleHeroMouseMove(e: MouseEvent<HTMLDivElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setHeroMouse({
+      x: (e.clientX - rect.left) / rect.width - 0.5,
+      y: (e.clientY - rect.top) / rect.height - 0.5,
+    });
+  }
+
+  function handleHeroMouseLeave() {
+    setHeroMouse({ x: 0, y: 0 });
+  }
 
   function handleStart() {
     setAuthOpen(true);
@@ -46,24 +85,73 @@ function HomeContent() {
   }
 
   return (
-    <div className="home-page">
+    <div className="home-page" onMouseMove={handleHeroMouseMove} onMouseLeave={handleHeroMouseLeave}>
+
+      {/* Starfield — fixed layer, spans the whole page behind every section */}
+      <div
+        className="hp-stars-layer"
+        style={{ transform: `translate3d(${heroMouse.x * 22}px, ${heroMouse.y * 16}px, 0)` }}
+      >
+        <svg className="hp-grain-bg" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <filter id="hpGrainNoise">
+            <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="7" stitchTiles="stitch" result="noise" />
+            <feColorMatrix
+              in="noise"
+              type="matrix"
+              values="0 0 0 0 1
+                      0 0 0 0 1
+                      0 0 0 0 1
+                      0 0 0 9 -7.2"
+            />
+          </filter>
+          <rect width="100%" height="100%" filter="url(#hpGrainNoise)" />
+        </svg>
+      </div>
 
       {/* ── Hero ── */}
       <div className="hp-hero">
 
-        {/* Dot pattern background */}
-        <svg className="hp-hero-dot-pattern" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="dots" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse">
-              <circle cx="1.5" cy="1.5" r="1.2" fill="#C8956C" opacity="0.3" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#dots)" />
-        </svg>
-
-        {/* Decorative circles */}
-        <div className="hp-hero-circle-tr" />
-        <div className="hp-hero-circle-bl" />
+        {/* Animated wave background — parallax layer (moves opposite to cursor, deeper) */}
+        <div
+          className="hp-parallax-layer"
+          style={{ transform: `translate3d(${heroMouse.x * -28}px, ${heroMouse.y * -20}px, 0)` }}
+        >
+          <svg
+            ref={waveRef}
+            className="hp-wave-bg"
+            viewBox={`0 0 ${waveW} ${waveH}`}
+            preserveAspectRatio="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <defs>
+              <filter id="waveBlur1" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="20" />
+              </filter>
+              <filter id="waveBlur2" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="26" />
+              </filter>
+            </defs>
+            <path
+              className="hp-wave-path hp-wave-path-1"
+              d={wavePath1}
+              stroke="var(--glass-glow)"
+              strokeOpacity="0.85"
+              strokeWidth="80"
+              fill="none"
+              filter="url(#waveBlur1)"
+            />
+            <path
+              className="hp-wave-path hp-wave-path-2"
+              d={wavePath2}
+              stroke="var(--glass-glow-soft)"
+              strokeOpacity="0.75"
+              strokeWidth="110"
+              fill="none"
+              filter="url(#waveBlur2)"
+            />
+          </svg>
+        </div>
 
         {/* Content */}
         <div className="hp-hero-content">
