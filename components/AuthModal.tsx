@@ -51,7 +51,7 @@ export default function AuthModal({ onClose, onProceed }: { onClose: () => void;
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.75)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '2rem', width: '100%', maxWidth: 400, position: 'relative' }}>
+      <div style={{ background: 'var(--surface-solid)', border: '1px solid var(--border)', borderRadius: 16, padding: '2rem', width: '100%', maxWidth: 400, position: 'relative' }}>
         <button onClick={onClose} style={{ position: 'absolute', top: '.85rem', right: '.85rem', background: 'none', border: 'none', color: 'var(--text3)', fontSize: '1rem', cursor: 'pointer' }}>✕</button>
         <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '.2rem' }}>{mode === 'signin' ? 'Sign in' : 'Create account'}</div>
         <div style={{ fontSize: '.8rem', color: 'var(--text2)', marginBottom: '1.4rem' }}>Save your progress across devices</div>

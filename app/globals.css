@@ -397,7 +397,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
 
 /* BUG REPORT MODAL */
 .bug-modal-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(28,20,16,.55); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
-.bug-modal { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 2.25rem 2rem 2rem; width: 100%; max-width: 440px; box-shadow: 0 24px 80px rgba(28,20,16,.18); }
+.bug-modal { position: relative; background: var(--surface-solid); border: 1px solid var(--border); border-radius: 20px; padding: 2.25rem 2rem 2rem; width: 100%; max-width: 440px; box-shadow: 0 24px 80px rgba(28,20,16,.18); }
 .bug-modal-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1rem; color: var(--text3); cursor: pointer; line-height: 1; padding: .25rem .4rem; border-radius: 6px; transition: color .2s, background .2s; }
 .bug-modal-close:hover { color: var(--text); background: var(--surface2); }
 .bug-modal-title { font-family: var(--font); font-size: 1.2rem; font-weight: 800; color: var(--text); margin-bottom: .4rem; letter-spacing: -.2px; }
@@ -452,7 +452,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
 
 /* ONBOARDING */
 .ob-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1.5rem; }
-.ob-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 2.5rem 2rem; width: 100%; max-width: 520px; }
+.ob-card { background: var(--surface-solid); border: 1px solid var(--border); border-radius: 20px; padding: 2.5rem 2rem; width: 100%; max-width: 520px; }
 .ob-header { margin-bottom: 2rem; }
 .ob-tag { font-family: var(--mono); font-size: .65rem; font-weight: 700; color: var(--amber); letter-spacing: 2.5px; text-transform: uppercase; margin-bottom: .75rem; }
 .ob-title { font-size: 1.45rem; font-weight: 800; letter-spacing: -.4px; margin-bottom: .5rem; }
