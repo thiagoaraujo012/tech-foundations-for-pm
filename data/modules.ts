@@ -57,7 +57,12 @@ const SECTIONS: ModuleSection[][] = [
   // ── Module 2: APIs ─────────────────────────────────────────
   [
     {
-      html: `<h2>APIs: The Language Systems Use to Talk to Each Other</h2><p>An API (Application Programming Interface) is a defined contract that lets two systems exchange information. It specifies what requests are valid, what data to send, and what response to expect. APIs are everywhere — they're what makes modern software composable, scalable, and fast to build.</p><p>Think of an API like a restaurant menu. The menu tells you what you can order (available endpoints), what information you need to provide (parameters), and what you'll receive in return (the response). You don't need to know how the kitchen prepares the food — you just need to know the menu.</p><p>When you open a weather app and it shows today's forecast, it's calling a weather API. When you log in with Google, the app is calling Google's Auth API. When Uber shows you nearby drivers, it's calling Google Maps' API for maps, and its own internal APIs for driver locations and pricing. A single user action often triggers dozens of API calls behind the scenes.</p>`,
+      html: `<h2>APIs: The Language Systems Use to Talk to Each Other</h2><p>Before we dive in, watch this short video for a clear, visual explanation of what APIs are and how they work.</p>`,
+      videoUrl: 'https://www.youtube.com/watch?v=ByGJQzlzxQg',
+      videoCaption: 'A clear, visual explanation of what APIs are and how they work.',
+    },
+    {
+      html: `<p>An API (Application Programming Interface) is a defined contract that lets two systems exchange information. It specifies what requests are valid, what data to send, and what response to expect. APIs are everywhere — they're what makes modern software composable, scalable, and fast to build.</p><p>Think of an API like a restaurant menu. The menu tells you what you can order (available endpoints), what information you need to provide (parameters), and what you'll receive in return (the response). You don't need to know how the kitchen prepares the food — you just need to know the menu.</p><p>When you open a weather app and it shows today's forecast, it's calling a weather API. When you log in with Google, the app is calling Google's Auth API. When Uber shows you nearby drivers, it's calling Google Maps' API for maps, and its own internal APIs for driver locations and pricing. A single user action often triggers dozens of API calls behind the scenes.</p>`,
       diagramKey: 'rest-api-request',
       diagramCaption: 'A REST request: the client asks, the server responds with JSON',
       inlineQuestion: {

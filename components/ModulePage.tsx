@@ -31,6 +31,10 @@ interface Props {
 
 const CREATOR_EMAIL = 'mainnontechpm@gmail.com';
 
+// Modules that require scrolling through all content before the quiz unlocks.
+// Test rollout: Module 1 only (index 0).
+const SCROLL_GATED_MODULES = new Set<number>([0]);
+
 export default function ModulePage({ moduleId }: Props) {
   const router = useRouter();
   const { user, loading, logout, getIdToken } = useAuth();
@@ -54,6 +58,11 @@ export default function ModulePage({ moduleId }: Props) {
   const [reflectTexts, setReflectTexts] = useState<Record<string, string>>({});
   const [savedOnce, setSavedOnce] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
+  // Reading gate: tracks which content blocks (sections + takeaways) have
+  // scrolled into view for the current module, per gate index.
+  const [readBlocks, setReadBlocks] = useState<Set<number>>(new Set());
+  const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const takeawaysRef = useRef<HTMLDivElement | null>(null);
 
   const modules = MODULES;
 
@@ -61,6 +70,7 @@ export default function ModulePage({ moduleId }: Props) {
   useEffect(() => {
     setView('study');
     setSavedOnce(false);
+    setReadBlocks(new Set());
   }, [moduleId]);
 
   // Guard: redirect to the last unlocked module if URL is accessed directly
@@ -152,6 +162,36 @@ export default function ModulePage({ moduleId }: Props) {
   const sections = mod.sections;
   const qas = mod.qas;
   const quiz = mod.quiz;
+
+  const scrollGateActive = SCROLL_GATED_MODULES.has(activeTab) && !isCreator;
+  const totalGateBlocks = sections.length + 1; // sections + takeaways block
+  const gateSatisfied = !scrollGateActive || quizState[activeTab] === 'pass' || readBlocks.size >= totalGateBlocks;
+
+  // Observe content blocks scrolling into view to progressively unlock the quiz.
+  useEffect(() => {
+    if (!scrollGateActive) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        setReadBlocks(prev => {
+          let changed = false;
+          const next = new Set(prev);
+          entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            const idx = Number((entry.target as HTMLElement).dataset.gateIdx);
+            if (!Number.isNaN(idx) && !next.has(idx)) {
+              next.add(idx);
+              changed = true;
+            }
+          });
+          return changed ? next : prev;
+        });
+      },
+      { threshold: 0.2, rootMargin: '0px 0px -15% 0px' }
+    );
+    sectionRefs.current.forEach(el => el && observer.observe(el));
+    if (takeawaysRef.current) observer.observe(takeawaysRef.current);
+    return () => observer.disconnect();
+  }, [scrollGateActive, activeTab, sections.length]);
 
   const passedCount = Object.values(quizState).filter(v => v === 'pass').length;
   const progressPct = Math.round((passedCount / modules.length) * 100);
@@ -267,7 +307,11 @@ export default function ModulePage({ moduleId }: Props) {
               const DiagramComp = section.diagramKey ? DIAGRAMS[section.diagramKey] : null;
 
               return (
-                <div key={sIdx}>
+                <div
+                  key={sIdx}
+                  ref={el => { sectionRefs.current[sIdx] = el; }}
+                  data-gate-idx={sIdx}
+                >
                   {/* Content */}
                   <div className="context-box">
                     <div className="ctx-label">
@@ -367,7 +411,7 @@ export default function ModulePage({ moduleId }: Props) {
             })}
 
             {/* Takeaways */}
-            <div className="takeaways">
+            <div className="takeaways" ref={takeawaysRef} data-gate-idx={sections.length}>
               <div className="takeaways-label">Takeaways for PMs</div>
               <ul className="takeaways-list">
                 {mod.takeaways.map((item, i) => (
@@ -376,8 +420,20 @@ export default function ModulePage({ moduleId }: Props) {
               </ul>
             </div>
 
-            <button className="goto-quiz" onClick={() => { setView('quiz'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
-              Go to Module Assessment →
+            {scrollGateActive && !gateSatisfied && (
+              <div className="read-gate-hint">
+                📖 Keep scrolling through the content above to unlock the assessment ({readBlocks.size}/{totalGateBlocks})
+              </div>
+            )}
+
+            <button
+              className={`goto-quiz${scrollGateActive && !gateSatisfied ? ' goto-quiz-locked' : ''}`}
+              disabled={scrollGateActive && !gateSatisfied}
+              onClick={() => { setView('quiz'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            >
+              {scrollGateActive && !gateSatisfied
+                ? `🔒 Keep reading to unlock (${readBlocks.size}/${totalGateBlocks})`
+                : 'Go to Module Assessment →'}
             </button>
 
             <div className="report-issue-wrap">
