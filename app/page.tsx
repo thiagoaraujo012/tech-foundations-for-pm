@@ -214,7 +214,7 @@ function HomeContent() {
           </div>
 
           <button className="btn-start" onClick={handleStart}>
-            Start your journey
+            {user ? 'Keep learning' : 'Start your journey'}
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
             </svg>
@@ -261,7 +261,7 @@ function HomeContent() {
       {/* ── Bottom CTA ── */}
       <div className="hp-cta">
         <p className="hp-cta-text">No engineering background required.</p>
-        <button className="btn-start" onClick={handleStart}>Get started →</button>
+        <button className="btn-start" onClick={handleStart}>{user ? 'Keep learning →' : 'Get started →'}</button>
       </div>
 
       {authOpen && (
