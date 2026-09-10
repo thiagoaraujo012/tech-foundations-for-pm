@@ -25,6 +25,16 @@ function saveLocal(data: object) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch {}
 }
 
+// Fisher-Yates shuffle, returns `count` random indices out of [0, poolSize).
+function sampleIndices(poolSize: number, count: number): number[] {
+  const indices = Array.from({ length: poolSize }, (_, i) => i);
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+  return indices.slice(0, count);
+}
+
 interface Props {
   moduleId: number;
 }
@@ -53,6 +63,8 @@ export default function ModulePage({ moduleId }: Props) {
   const [bugOpen, setBugOpen] = useState(false);
   // Randomly pick 3 Q&A indices from the pool of 6, per module, per session
   const [qaIndices, setQaIndices] = useState<Record<number, number[]>>({});
+  // Randomly pick 3 quiz question indices from the pool of 6, per module, per session
+  const [quizIndices, setQuizIndices] = useState<Record<number, number[]>>({});
   // Inline question state (not synced to Firestore — soft interactions)
   const [inlineSels, setInlineSels] = useState<Record<string, number>>({});
   const [reflectTexts, setReflectTexts] = useState<Record<string, string>>({});
@@ -91,12 +103,14 @@ export default function ModulePage({ moduleId }: Props) {
   // Randomize 3 Q&As from the pool each time a module is visited
   useEffect(() => {
     if (!qaIndices[activeTab]) {
-      const indices = Array.from({ length: 6 }, (_, i) => i);
-      for (let i = indices.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [indices[i], indices[j]] = [indices[j], indices[i]];
-      }
-      setQaIndices(prev => ({ ...prev, [activeTab]: indices.slice(0, 3) }));
+      setQaIndices(prev => ({ ...prev, [activeTab]: sampleIndices(modules[activeTab].qas.length, 3) }));
+    }
+  }, [activeTab]);
+
+  // Randomize 3 quiz questions from the pool each time a module is visited
+  useEffect(() => {
+    if (!quizIndices[activeTab]) {
+      setQuizIndices(prev => ({ ...prev, [activeTab]: sampleIndices(modules[activeTab].quiz.length, 3) }));
     }
   }, [activeTab]);
 
@@ -161,7 +175,8 @@ export default function ModulePage({ moduleId }: Props) {
   const mod = modules[activeTab];
   const sections = mod.sections;
   const qas = mod.qas;
-  const quiz = mod.quiz;
+  const quizPool = mod.quiz;
+  const quiz = (quizIndices[activeTab] ?? [0, 1, 2]).map(qi => quizPool[qi]);
 
   const scrollGateActive = SCROLL_GATED_MODULES.has(activeTab) && !isCreator;
   const totalGateBlocks = sections.length + 1; // sections + takeaways block
@@ -222,6 +237,7 @@ export default function ModulePage({ moduleId }: Props) {
   function retryQuiz() {
     setQuizState(prev => { const n = { ...prev }; delete n[activeTab]; return n; });
     setQuizSels(prev => ({ ...prev, [activeTab]: [-1, -1, -1] }));
+    setQuizIndices(prev => ({ ...prev, [activeTab]: sampleIndices(modules[activeTab].quiz.length, 3) }));
   }
 
   const sels = quizSels[activeTab] ?? [-1, -1, -1];
