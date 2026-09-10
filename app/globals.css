@@ -288,7 +288,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
 
 .hp-hero-content { position: relative; z-index: 1; }
 
-.hp-badge, .hp-title, .hp-desc, .hp-creator, .hp-stats, .hp-hero-content .btn-start {
+.hp-badge, .hp-title, .hp-desc, .hp-creator, .hp-stats, .hp-hero-content .btn-start, .hp-login-link {
   opacity: 0;
   animation: hp-fade-up .7s ease-out forwards;
 }
@@ -298,6 +298,20 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
 .hp-creator { animation-delay: .4s; }
 .hp-stats { animation-delay: .5s; }
 .hp-hero-content .btn-start { animation-delay: .6s; }
+.hp-login-link { animation-delay: .7s; }
+
+.hp-login-link {
+  display: block;
+  margin: 1rem auto 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font);
+  font-size: .8rem;
+  color: var(--text3);
+}
+.hp-login-link span { color: var(--purple); font-weight: 600; text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; }
+.hp-login-link:hover { color: var(--text2); }
 
 @keyframes hp-fade-up {
   from { opacity: 0; transform: translateY(18px); }
@@ -307,7 +321,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
 @media (prefers-reduced-motion: reduce) {
   .hp-wave-path-1, .hp-wave-path-2 { animation: none; }
   .hp-parallax-layer, .hp-stars-layer { transition: none; transform: none !important; }
-  .hp-badge, .hp-title, .hp-desc, .hp-creator, .hp-stats, .hp-hero-content .btn-start {
+  .hp-badge, .hp-title, .hp-desc, .hp-creator, .hp-stats, .hp-hero-content .btn-start, .hp-login-link {
     animation: none;
     opacity: 1;
   }
