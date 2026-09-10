@@ -16,6 +16,12 @@ export type ModuleSection = {
   inlineQuestion?: InlineQuestion;
 };
 
+export type CaseStudy = {
+  company: string;
+  title: string;
+  html: string;
+};
+
 export type Module = {
   id: number;
   title: string;
@@ -23,6 +29,7 @@ export type Module = {
   qas: QA[];
   quiz: QuizQuestion[];
   takeaways: string[];
+  caseStudy?: CaseStudy;
 };
 
 const SECTIONS: ModuleSection[][] = [
@@ -546,6 +553,40 @@ const TAKEAWAYS: string[][] = [
   ],
 ];
 
+// ── Real-world case studies (5 modules — chosen for the clearest, best-documented stories) ──
+const CASE_STUDIES: Record<number, CaseStudy> = {
+  // Module 2 (index 1) — APIs & How Systems Talk
+  1: {
+    company: 'Amazon',
+    title: 'The Memo That Accidentally Created AWS',
+    html: `<p>In 2002, according to a widely cited account by former Amazon and Google engineer Steve Yegge — published years later in an internal Google post that became public by accident — Jeff Bezos sent a mandate to every engineering team at Amazon. The rules, as Yegge recalled them: all teams must expose their data and functionality only through service interfaces; teams may talk to each other only through those interfaces — no shortcuts, no shared databases, no back doors; and every interface had to be designed as if it might one day be exposed to developers outside the company. The mandate reportedly ended with a line every engineer remembers: <em>"Anyone who doesn't do this will be fired."</em></p><p>There was no product roadmap behind it — just a demand for internal discipline. But by forcing every team to build clean, externalizable APIs for its own internal use, Amazon ended up with the building blocks for a new business: in 2006 it started selling those same internal services to the public as Amazon Web Services, which today generates more operating profit than Amazon's entire retail business.</p><p>The lesson for PMs: an API isn't just a technical integration detail — it's a boundary that forces teams to think about their product as something other teams (or other companies) could consume. Mandating that discipline early can pay off in ways no one originally planned for.</p>`,
+  },
+  // Module 3 (index 2) — Architecture & Scale
+  2: {
+    company: 'Twitter',
+    title: 'How the Fail Whale Forced a Rewrite',
+    html: `<p>Twitter launched in 2006 on a single monolithic Ruby on Rails application backed by MySQL — a good choice for shipping fast with a small team. But as the service went viral, that same monolith became the bottleneck. Between roughly 2008 and 2010, outages became so frequent that Twitter's error page — an illustration of a whale being lifted by birds — became a cultural icon: the "Fail Whale." Ruby's request handling and heavy garbage collection couldn't keep up with the traffic, and the whole system scaled as one unit, so a slowdown anywhere could take the entire site down.</p><p>Twitter's engineering team spent the next several years — roughly 2008 to 2013 — gradually breaking the monolith apart, moving core pieces (message queues, storage, search, and eventually much of the backend) onto the JVM, first in Scala and later in Java, as independent services that could each scale on their own. The payoff showed up on election night in November 2012: Twitter handled a peak of over 15,000 tweets per second — including one minute with 874,560 tweets — without a major outage.</p><p>For PMs: architecture decisions that look free early on ("just ship it as one app") often become the exact thing standing between your product and its next order of magnitude of growth. Knowing when a system needs to be broken apart — and that it takes years, not weeks — helps you set realistic expectations with stakeholders.</p>`,
+  },
+  // Module 5 (index 4) — Performance & Loading
+  4: {
+    company: 'Amazon',
+    title: 'Why 100 Milliseconds Cost Amazon 1% of Sales',
+    html: `<p>In the early 2000s, Amazon engineer Greg Linden ran an internal experiment: deliberately slow down the site in small, controlled increments — 100 milliseconds at a time — and measure what happened to sales. The result, which he later described in his own blog and in a 2006 guest lecture at Stanford, became one of the most quoted numbers in web performance: every additional 100ms of latency cost roughly 1% in sales.</p><p>That data point — sourced to Linden's own account of his time at Amazon rather than an official company-published study — reshaped how the tech industry talks to executives about speed. It gave engineers a business argument, in dollars, for work that used to be framed only as a technical nice-to-have. Google has since cited similar findings for its own search results, and the general principle — that even imperceptibly small delays measurably hurt conversion — has been echoed informally by companies across e-commerce, media, and travel ever since.</p><p>Why it matters for PMs: performance work is often the easiest thing to deprioritize because it doesn't look like a feature. Linden's experiment is the counter-argument — it turns "the page feels a bit slow" into a number a CFO understands.</p>`,
+  },
+  // Module 8 (index 7) — Auth & Security
+  7: {
+    company: 'Equifax',
+    title: 'The Patch That Was Never Applied',
+    html: `<p>On March 7, 2017, a critical vulnerability in Apache Struts (a web framework, tracked as CVE-2017-5638) was publicly disclosed along with a patch. Equifax's own internal security team sent out an alert two days later, on March 9, instructing teams to patch the affected systems. It was too late by one day: attackers had already found their way in on March 10 — before the patch had been applied to the vulnerable system.</p><p>What makes the case a textbook failure is what happened next: an internal vulnerability scan on March 15 was supposed to catch exactly this kind of exposure — and missed it. The breach continued undetected for over four months, discovered only on July 29, 2017, and disclosed to the public in September. By the time it was over, the personal data of roughly 147 million people — Social Security numbers, birth dates, addresses — had been exposed. In 2019, Equifax agreed to a $700 million settlement with the FTC, CFPB, and all 50 states — one of the largest data breach settlements in history.</p><p>The PM angle: this wasn't a sophisticated, unstoppable attack. It was a known vulnerability, a known patch, and a two-day gap where the fix should have happened but the process to guarantee it didn't exist. Security isn't just an engineering checkbox — it needs an owner, a deadline, and a way to verify the fix actually landed.</p>`,
+  },
+  // Module 9 (index 8) — DevOps & Deployment
+  8: {
+    company: 'Knight Capital',
+    title: '45 Minutes, $460 Million',
+    html: `<p>On the morning of August 1, 2012, Knight Capital Group deployed new order-routing software called RLP to its production trading servers. According to widely cited post-mortem accounts, the new code was successfully installed on seven of the company's eight servers — but the eighth still had old, dormant test code called "Power Peg," left over from years earlier and never fully removed. A flag in the new deployment that was meant to activate RLP accidentally reactivated Power Peg on that one server instead.</p><p>The result: while trying to fill just 212 customer orders, Knight's system sent more than 4 million erroneous orders into the market. In 45 minutes, before anyone could diagnose and stop it, the company had lost roughly $460 million — nearly four times its annual profit — pushing it to the edge of bankruptcy and forcing a rescue acquisition days later. The SEC later fined Knight $12 million for violating market-access safeguards.</p><p>For PMs, this is the canonical argument for boring, disciplined deployment practices: a consistent rollout across every server, dead code that gets fully removed instead of just disabled, and — above all — a fast, tested rollback plan. "What's the rollback plan?" is a five-second question that, in this case, could have prevented a company-ending event.</p>`,
+  },
+};
+
 export const MODULES: Module[] = TITLES_EN.map((title, i) => ({
   id: i,
   title,
@@ -553,6 +594,7 @@ export const MODULES: Module[] = TITLES_EN.map((title, i) => ({
   qas: QAS_EN[i],
   quiz: QUIZZES_EN[i],
   takeaways: TAKEAWAYS[i],
+  caseStudy: CASE_STUDIES[i],
 }));
 
 export const FREE_MODULES = 3;

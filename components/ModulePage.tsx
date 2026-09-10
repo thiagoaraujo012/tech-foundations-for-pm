@@ -427,6 +427,15 @@ export default function ModulePage({ moduleId }: Props) {
               );
             })}
 
+            {/* Real-world case study */}
+            {mod.caseStudy && (
+              <div className="case-study">
+                <div className="case-study-label">📖 Real-World Case — {mod.caseStudy.company}</div>
+                <h3 className="case-study-title">{mod.caseStudy.title}</h3>
+                <div className="case-study-body" dangerouslySetInnerHTML={{ __html: mod.caseStudy.html }} />
+              </div>
+            )}
+
             {/* Takeaways */}
             <div className="takeaways" ref={takeawaysRef} data-gate-idx={sections.length}>
               <div className="takeaways-label">Takeaways for PMs</div>
