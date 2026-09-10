@@ -21,7 +21,7 @@ const MODULES = [
 
 function HomeContent() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [authOpen, setAuthOpen] = useState(false);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
   const [heroMouse, setHeroMouse] = useState({ x: 0, y: 0 });
@@ -65,7 +65,12 @@ function HomeContent() {
   }
 
   function handleStart() {
-    setAuthOpen(true);
+    if (loading) return;
+    if (user) {
+      handleProceed();
+    } else {
+      setAuthOpen(true);
+    }
   }
 
   function handleProceed() {

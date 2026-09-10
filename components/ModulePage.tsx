@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from './AuthProvider';
 import { MODULES } from '@/data/modules';
@@ -293,7 +294,7 @@ export default function ModulePage({ moduleId }: Props) {
             aria-label="Scroll left"
           >‹</button>
           <div className="nav" ref={navRef}>
-            <a href="/" className="nav-btn" title="Home">⌂</a>
+            <Link href="/" className="nav-btn" title="Home">⌂</Link>
             {modules.map((m, i) => {
               const unlocked = isUnlocked(i);
               const active = i === activeTab;
