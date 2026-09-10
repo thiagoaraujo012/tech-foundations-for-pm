@@ -86,12 +86,18 @@ export default function ModulePage({ moduleId }: Props) {
     setReadBlocks(new Set());
   }, [moduleId]);
 
-  // Guard: redirect to the last unlocked module if URL is accessed directly
+  // Guard: redirect to the last unlocked module if URL is accessed directly.
+  // A never-logged-in visitor who hasn't earned this module via assessments
+  // always bounces to home, instead of to whatever they unlocked locally.
   useEffect(() => {
     if (loading) return;
     if (isCreator) return;
     if (activeTab === 0) return;
     if (quizState[activeTab - 1] === 'pass') return;
+    if (!user) {
+      router.replace('/');
+      return;
+    }
     // Find the furthest reachable module
     let target = 0;
     for (let i = 1; i < MODULES.length; i++) {
@@ -99,7 +105,7 @@ export default function ModulePage({ moduleId }: Props) {
       else break;
     }
     router.replace(`/module/${target + 1}`);
-  }, [activeTab, quizState, isCreator, loading]);
+  }, [activeTab, quizState, isCreator, loading, user]);
 
   // Randomize 3 Q&As from the pool each time a module is visited
   useEffect(() => {
